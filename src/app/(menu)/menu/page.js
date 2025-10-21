@@ -134,6 +134,8 @@ const items = [
 
 export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [showFilterDropdown, setShowFilterDropdown] = React.useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = React.useState(false);
   const scrollContainerRef = React.useRef(null);
 
   const handleScroll = (direction) => {
@@ -147,6 +149,42 @@ export default function MenuPage() {
       }
     }
   };
+
+  const toggleFilterDropdown = () => {
+    setShowFilterDropdown(!showFilterDropdown);
+  };
+
+  const handleApplyFilter = () => {
+    // Apply filter logic here
+    setShowFilterDropdown(false);
+  };
+
+  const handleCancelFilter = () => {
+    setShowFilterDropdown(false);
+  };
+
+  // Close dropdown when clicking outside and prevent scroll when dropdown is open
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showFilterDropdown && !event.target.closest('.filter-dropdown-container')) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    // Prevent scroll when dropdown is open
+    if (showFilterDropdown) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showFilterDropdown]);
 
   const filteredItems = selectedCategory === "all"
     ? items
@@ -175,20 +213,67 @@ export default function MenuPage() {
           ></Image>
         </div>
 
-        <div className="mt-4 mb-2 hidden md:flex items-center justify-between">
+        {/* desktop menu */}
+        <div className="mt-4 mb- hidden md:flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-[31px] leading-[37px] font-bold tracking-normal text-stone-900">
               MENU
             </h1>
           </div>
-          <div className="flex items-center justify-center w-8 h-8 border-[1px] border-black rounded-full hover:cursor-pointer">
-            <Image
-              src={FilterIcon}
-              alt="Filter Icon"
-              width={14.56}
-              height={14.56}
-              className="h-[14.56px] w-[14.56px] object-cover"
-            />
+
+          {/* Desktop filter button */}
+          <div className="relative filter-dropdown-container">
+            <button
+              onClick={toggleFilterDropdown}
+              className="flex items-center justify-center w-8 h-8 border-[1px] border-black rounded-full hover:cursor-pointer">
+              <Image
+                src={FilterIcon}
+                alt="Filter Icon"
+                width={14.56}
+                height={14.56}
+                className="h-[14.56px] w-[14.56px] object-cover"
+              />
+            </button>
+
+            {/* Filter Dropdown */}
+            {showFilterDropdown && (
+              <div className="absolute right-0 top-10 w-[376px] h-[450px] bg-white rounded-sm shadow-[0_4px_15px_rgba(0,0,0,0.3)] z-50 scrollbar-none">
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b border-gray-200">
+                  <h3 className="text-sm leading-[14px] font-semibold text-black">Filters</h3>
+                  <button
+                    onClick={handleCancelFilter}
+                    className="bg-[#969696] px-6 py-3 rounded-full text-sm leading-5 font-medium text-white hover:cursor-pointer">
+                    Cancel
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="showOnlyAvailable"
+                      checked={showOnlyAvailable}
+                      onChange={(e) => setShowOnlyAvailable(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor="showOnlyAvailable" className="text-base leading-6 font-medium text-black">
+                      Show Only Available Item
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="absolute bottom-0 left-0 right-0 p-5 border-t border-gray-200">
+                  <button
+                    onClick={handleApplyFilter}
+                    className="w-full bg-primary text-base leading-[20px] text-white py-3 rounded-full font-medium hover:cursor-pointer">
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -202,7 +287,7 @@ export default function MenuPage() {
               height={16}
             ></Image>
           </div>
-          <div className="relative bg-white mt-3 md:mt-6 h-[48px] mb-8 border-t border-[#EFEFF0] shadow-[0_5px_4px_-3px_rgba(0,0,0,0.1)] md:shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
+          <div className="relative bg-white mt-3 md:mt-5 h-[48px] mb-8 border-t border-[#EFEFF0] shadow-[0_5px_4px_-3px_rgba(0,0,0,0.1)] md:shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
             <button
               onClick={() => handleScroll('left')}
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-[47.5px] bg-white px-[10px] hover:cursor-pointer"

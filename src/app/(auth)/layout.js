@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/site/Navbar";
 import MobileAuthNavbar from "../../components/mobile/MobileAuthNavbar";
 import { Footer } from "@/components/site/Footer";
+import { BottomTabBar } from "@/components/site/BottomTabBar";
 
 export const metadata = {
     title: "Friends Juice Bar - Authentication",
@@ -20,6 +21,7 @@ export default function AuthLayout({ children }) {
                 {children}
             </div>
             <Footer className="hidden md:block" />
+            <BottomTabBar />
         </div>
     );
 }

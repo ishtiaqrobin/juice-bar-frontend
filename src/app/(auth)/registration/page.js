@@ -31,7 +31,7 @@ export default function RegistrationPage() {
                     <Button className="bg-red-700 hover:bg-red-800 text-white">
                         Register
                     </Button>
-                    {/* <p className="text-sm text-stone-700">Already have an account? <Link href="/login" className="text-red-700">Login</Link></p> */}
+                    <p className="text-sm text-stone-700">Already have an account? <Link href="/login" className="text-red-700">Login</Link></p>
                 </form>
             </div>
         </div>

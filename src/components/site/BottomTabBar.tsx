@@ -17,15 +17,18 @@ export function BottomTabBar() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 h-[89px] bg- md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 h-[89px] md:hidden">
+      {/* White Background - 10px shorter than image */}
+      <div className="absolute inset-x-0 bottom-0 h-[81px] bg-white z-10"></div>
+      {/* Background Image */}
       <Image
         src="/bottom_background.svg"
         alt="Bottom Background"
         width={375}
         height={89}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover z-20"
       />
-      <div className="relative mx-auto flex items-center justify-between px-8 h-full pb-">
+      <div className="relative mx-auto flex items-center justify-between px-8 h-full pb- z-30">
         <div className="flex gap-8">
           <div>
             <Link href="/" className="h-[45px] flex flex-col items-center">
@@ -104,7 +107,13 @@ export function BottomTabBar() {
             <Link href="/login" className="h-[45px] flex flex-col items-center">
               <div className="h-[28px] flex items-center">
                 <Image
-                  src={pathname === "/login" ? IconActiveAccount : IconAccount}
+                  src={
+                    pathname === "/login" ||
+                    pathname === "/registration" ||
+                    pathname === "/forgot-password"
+                      ? IconActiveAccount
+                      : IconAccount
+                  }
                   alt="Account Icon"
                   width={28}
                   height={28}
@@ -118,31 +127,5 @@ export function BottomTabBar() {
         </div>
       </div>
     </div>
-  );
-}
-
-function Tab({
-  to,
-  label,
-  icon,
-}: {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const isActive = pathname === to;
-
-  return (
-    <Link href={to} className="flex flex-col items-center gap-1">
-      <span>{icon}</span>
-      <span
-        className={`text-xs font-medium ${
-          isActive ? "text-[#FF1C1F]" : "text-[#969696]"
-        }`}
-      >
-        {label}
-      </span>
-    </Link>
   );
 }
