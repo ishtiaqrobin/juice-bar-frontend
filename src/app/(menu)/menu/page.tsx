@@ -307,7 +307,7 @@ export default function MenuPage(): JSX.Element {
 
   const handleScroll = (direction: "left" | "right"): void => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 200;
+      const scrollAmount = 150; // 150px scroll amount for each scroll
       const container = scrollContainerRef.current;
       if (direction === "left") {
         container.scrollLeft -= scrollAmount;
@@ -334,7 +334,7 @@ export default function MenuPage(): JSX.Element {
     }
 
     if (targetRef?.current) {
-      const offsetTop = targetRef.current.offsetTop - 100; // 100px offset for sticky header
+      const offsetTop = targetRef.current.offsetTop - 150; // 150px offset for sticky header
       window.scrollTo({
         top: offsetTop,
         behavior: "smooth",
@@ -354,6 +354,31 @@ export default function MenuPage(): JSX.Element {
     }, 500); // 500ms delay to allow scroll animation to complete
   };
 
+  // Initial page load - reset scroll position and set initial category
+  React.useEffect(() => {
+    // Reset scroll position to top on page load
+    window.scrollTo(0, 0);
+
+    // Set initial category to fruits
+    setSelectedCategory("fruits");
+
+    // Reset manual selection flag
+    setIsManualSelection(false);
+  }, []);
+
+  // Handle browser back/forward navigation
+  React.useEffect(() => {
+    const handlePopState = (): void => {
+      // Reset to top and fruits category on navigation
+      window.scrollTo(0, 0);
+      setSelectedCategory("fruits");
+      setIsManualSelection(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   // Scroll detection for automatic tab selection
   React.useEffect(() => {
     const handleScrollDetection = (): void => {
@@ -370,8 +395,8 @@ export default function MenuPage(): JSX.Element {
       const drinksTop = drinksSectionRef.current?.offsetTop || 0;
 
       // Calculate which section is currently in view
-      // Use a threshold of 200px from the top to determine active section
-      const threshold = 200;
+      // Use a threshold of 150px from the top to determine active section
+      const threshold = 150;
 
       if (scrollPosition < fruitsTop + threshold) {
         setSelectedCategory("fruits");
@@ -384,8 +409,15 @@ export default function MenuPage(): JSX.Element {
       }
     };
 
-    window.addEventListener("scroll", handleScrollDetection);
-    return () => window.removeEventListener("scroll", handleScrollDetection);
+    // Add a small delay to ensure DOM is ready before adding scroll listener
+    const timeoutId = setTimeout(() => {
+      window.addEventListener("scroll", handleScrollDetection);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("scroll", handleScrollDetection);
+    };
   }, [isManualSelection]);
 
   const toggleFilterDropdown = (): void => {
