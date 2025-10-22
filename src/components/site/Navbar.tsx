@@ -30,7 +30,6 @@ export function Navbar() {
         </div>
 
         {/* Centered logo on mobile */}
-
         <nav className="hidden md:flex items-center gap-8">
           <Link
             href="/"

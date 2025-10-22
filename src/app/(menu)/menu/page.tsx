@@ -293,6 +293,12 @@ export default function MenuPage(): JSX.Element {
   const sectionRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>(
     {}
   );
+  // Refs and state for animated tab indicator
+  const tabRefs = React.useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [tabIndicator, setTabIndicator] = React.useState<{
+    left: number;
+    width: number;
+  }>({ left: 0, width: 0 });
 
   const handleScroll = (direction: "left" | "right"): void => {
     if (scrollContainerRef.current) {
@@ -367,6 +373,31 @@ export default function MenuPage(): JSX.Element {
       return 300; // Larger threshold for desktop
     }
   };
+
+  // Update animated underline indicator to match active tab
+  const updateTabIndicator = React.useCallback(() => {
+    const activeBtn = selectedCategory
+      ? tabRefs.current[selectedCategory]
+      : null;
+    const scrollEl = scrollContainerRef.current;
+    if (!activeBtn || !scrollEl) return;
+    const leftWithinScroll = activeBtn.offsetLeft - scrollEl.scrollLeft;
+    setTabIndicator({ left: leftWithinScroll, width: activeBtn.offsetWidth });
+  }, [selectedCategory]);
+
+  // Recompute indicator position when active tab changes, tabs scroll, or window resizes
+  React.useEffect(() => {
+    updateTabIndicator();
+    const onResize = () => updateTabIndicator();
+    window.addEventListener("resize", onResize);
+    const scrollEl = scrollContainerRef.current;
+    const onScroll = () => updateTabIndicator();
+    if (scrollEl) scrollEl.addEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (scrollEl) scrollEl.removeEventListener("scroll", onScroll);
+    };
+  }, [updateTabIndicator, categories]);
 
   // Function to scroll to specific section
   const scrollToSection = (categoryKey: string): void => {
@@ -683,7 +714,7 @@ export default function MenuPage(): JSX.Element {
             </button>
             <div
               ref={scrollContainerRef}
-              className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth text-sm leading-[18px] font-medium px-10"
+              className="relative flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth text-sm leading-[18px] font-medium px-10"
             >
               {categories
                 .filter((cat) => cat.isActive)
@@ -691,16 +722,27 @@ export default function MenuPage(): JSX.Element {
                 .map((cat) => (
                   <button
                     key={cat.key}
-                    className={`px-4 h-[47.5px] hover:cursor-pointer border-b-[3px] whitespace-nowrap transition-colors duration-200 ${
+                    ref={(el) => {
+                      tabRefs.current[cat.key] = el;
+                    }}
+                    className={`px-4 h-[47.5px] hover:cursor-pointer whitespace-nowrap transition-colors duration-200 ${
                       selectedCategory === cat.key
-                        ? "text-primary border-primary"
-                        : "text-[#0009] border-transparent"
+                        ? "text-primary"
+                        : "text-[#0009]"
                     }`}
                     onClick={() => handleCategoryClick(cat.key)}
                   >
                     {cat.label}
                   </button>
                 ))}
+              {/* Animated underline indicator */}
+              <span
+                className="pointer-events-none absolute bottom-0 h-[2px] bg-primary transition-all duration-300 ease-out"
+                style={{
+                  left: `${tabIndicator.left}px`,
+                  width: `${tabIndicator.width}px`,
+                }}
+              />
             </div>
             <button
               onClick={() => handleScroll("right")}
