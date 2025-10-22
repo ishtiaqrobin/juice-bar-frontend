@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/site/Navbar";
 import { BottomTabBar } from "@/components/site/BottomTabBar";
 import { Footer } from "@/components/site/Footer";
+import AppFooter from "@/components/site/AppFooter";
 import MobileHomeNavbar from "../../components/mobile/MobileHomeNavbar";
 
 export const metadata = {
@@ -18,6 +19,7 @@ export default function HomeLayout({ children }) {
             <div className="min-h-[400px] pt-0 md:pt-[73px]">
                 {children}
             </div>
+            <AppFooter />
             <Footer className="hidden md:block" />
             <BottomTabBar />
         </div>

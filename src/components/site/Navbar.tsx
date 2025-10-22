@@ -22,7 +22,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="w-full bg-white fixed top-0 z-50 shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
+    <header className="w-full bg-white fixed top-0 z-60 shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
       <div className="max-w-[940px] mx-auto flex items-center justify-between px- py- md:py-">
         {/* Mobile hamburger */}
         <div className="md:hidden">

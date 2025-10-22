@@ -10,7 +10,6 @@ import { HeroCarousel } from "@/components/site/HeroCarousel";
 import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg"
 
 const categories = [
-  { key: "foods", label: "Foods" },
   { key: "fruits", label: "Fruits" },
   { key: "juices", label: "Juices" },
   { key: "drinks", label: "Drinks" },
@@ -22,7 +21,7 @@ const items = [
     name: "Hot Tea",
     price: "৳499",
     image: "https://kfc.com.my/media/catalog/product/h/o/hot-tea.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 2,
@@ -36,7 +35,7 @@ const items = [
     name: "Sprite (M)",
     price: "৳99",
     image: "https://kfc.com.my/media/catalog/product/s/p/sprite-glass-large.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 4,
@@ -50,7 +49,7 @@ const items = [
     name: "Spicy Chicken Bucket",
     price: "৳499",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 6,
@@ -78,7 +77,7 @@ const items = [
     name: "Spicy Chicken Bucket",
     price: "৳499",
     image: "https://kfc.com.my/media/catalog/product/t/h/the_one_box_combo_a_coleslaw_.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 10,
@@ -92,7 +91,7 @@ const items = [
     name: "Crispy Fries",
     price: "৳99",
     image: "https://kfc.com.my/media/catalog/product/2/-/2-pc_combo_k-cheese_crunch.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 12,
@@ -106,7 +105,7 @@ const items = [
     name: "Spicy Chicken Bucket",
     price: "৳499",
     image: "https://kfc.com.my/media/catalog/product/2/p/2pc-combo-with-cerealcheezyfries.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    category: "foods",
+    category: "juices",
   },
   {
     id: 14,
@@ -127,6 +126,117 @@ const items = [
     name: "Cold Cola",
     price: "৳80",
     image: "https://kfc.com.my/media/catalog/product/p/m/pm-zinger-double-down-box-meal.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "drinks",
+  },
+  {
+    id: 17,
+    name: "Hot Tea",
+    price: "৳499",
+    image: "https://kfc.com.my/media/catalog/product/g/a/garlic_aioli_fries-menu.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
+    category: "juices",
+  },
+  {
+    id: 18,
+    name: "Iced Milo (M)",
+    price: "৳199",
+    image: "https://kfc.com.my/media/catalog/product/c/e/cempedak-pie.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
+    category: "fruits",
+  },
+  {
+    id: 19,
+    name: "Sprite (M)",
+    price: "৳99",
+    image: "https://kfc.com.my/media/catalog/product/s/t/strawberry_cheese_mochi_menu.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
+    category: "juices",
+  },
+  {
+    id: 20,
+    name: "Iced Americano (12oz)",
+    price: "৳80",
+    image: "https://kfc.com.my/media/catalog/product/c/e/cerealcheezyfries-_m_.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "drinks",
+  },
+  {
+    id: 21,
+    name: "Spicy Chicken Bucket",
+    price: "৳499",
+    image: "https://kfc.com.my/media/catalog/product/g/a/garlic_aioli_sauce_alc.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "juices",
+  },
+  {
+    id: 22,
+    name: "Classic Chicken Burger",
+    price: "৳199",
+    image: "https://kfc.com.my/media/catalog/product/s/p/sprite-bottle-new-angle.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "fruits",
+  },
+  {
+    id: 23,
+    name: "Crispy Fries",
+    price: "৳99",
+    image: "https://kfc.com.my/media/catalog/product/f/a/fanta-strawberry-bottle.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "juices",
+  },
+  {
+    id: 24,
+    name: "Cold Cola",
+    price: "৳80",
+    image: "https://kfc.com.my/media/catalog/product/f/u/fuse-tea-heaven-earth-ice-lemon-tea-bottle.jpeg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "drinks",
+  },
+  {
+    id: 25,
+    name: "Spicy Chicken Bucket",
+    price: "৳499",
+    image: "https://kfc.com.my/media/catalog/product/m/i/minute-maid-orange-plus-bottle.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "juices",
+  },
+  {
+    id: 26,
+    name: "Classic Chicken Burger",
+    price: "৳199",
+    image: "https://kfc.com.my/media/catalog/product/b/r/breakfast-2pcnasilemakcombopm.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "fruits",
+  },
+  {
+    id: 27,
+    name: "Crispy Fries",
+    price: "৳99",
+    image: "https://kfc.com.my/media/catalog/product/n/a/nasilemak_tanpa_ayam_pm.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "juices",
+  },
+  {
+    id: 28,
+    name: "Cold Cola",
+    price: "৳80",
+    image: "https://kfc.com.my/media/catalog/product/e/g/eggtart-2pccombo-tea.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "drinks",
+  },
+  {
+    id: 29,
+    name: "Spicy Chicken Bucket",
+    price: "৳499",
+    image: "https://kfc.com.my/media/catalog/product/c/o/colonelclassic-combo_withhashbrown.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "juices",
+  },
+  {
+    id: 30,
+    name: "Classic Chicken Burger",
+    price: "৳199",
+    image: "https://kfc.com.my/media/catalog/product/i/c/icedamericano_1.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+    category: "fruits",
+  },
+  {
+    id: 31,
+    name: "Crispy Fries",
+    price: "৳99",
+    image: "https://kfc.com.my/media/catalog/product/m/i/mineral-water-600ml_.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
+  },
+  {
+    id: 32,
+    name: "Cold Cola",
+    price: "৳80",
+    image: "https://kfc.com.my/media/catalog/product/f/a/fanta-strawberry-glass-large_1.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
     category: "drinks",
   },
 
@@ -172,17 +282,17 @@ export default function MenuPage() {
     };
 
     // Prevent scroll when dropdown is open
-    if (showFilterDropdown) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    // if (showFilterDropdown) {
+    //   document.body.style.overflow = 'hidden';
+    // } else {
+    //   document.body.style.overflow = 'unset';
+    // }
 
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
+      // document.body.style.overflow = 'unset';
     };
   }, [showFilterDropdown]);
 
@@ -192,8 +302,19 @@ export default function MenuPage() {
 
   return (
     <div>
-      {/* <StartOrder /> */}
+      {/* <div className="mt-1 md:mt-0 px-4 md:px-0">
+        <StartOrder />
+      </div> */}
       <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
+
+        <div className="hidden md:block mb-3">
+          <Image
+            src={IconFJBStripe}
+            alt="Logo"
+            width={40}
+            height={16}
+          ></Image>
+        </div>
 
         <div className="hidden md:block" >
           <BreadcrumbWithCustomSeparator />
@@ -203,15 +324,6 @@ export default function MenuPage() {
         <section className="relative isolate bg-white pt-0 pb-5 md:pt-6 md:pb-8">
           <HeroCarousel />
         </section>
-
-        <div className="hidden">
-          <Image
-            src={IconFJBStripe}
-            alt="Logo"
-            width={40}
-            height={16}
-          ></Image>
-        </div>
 
         {/* desktop menu */}
         <div className="mt-4 mb- hidden md:flex items-center justify-between">
@@ -237,7 +349,7 @@ export default function MenuPage() {
 
             {/* Filter Dropdown */}
             {showFilterDropdown && (
-              <div className="absolute right-0 top-10 w-[376px] h-[450px] bg-white rounded-sm shadow-[0_4px_15px_rgba(0,0,0,0.3)] z-50 scrollbar-none">
+              <div className="absolute right-0 top-10 w-[376px] h-[450px] bg-white rounded-sm shadow-[0_4px_15px_rgba(0,0,0,0.3)] z-50">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-200">
                   <h3 className="text-sm leading-[14px] font-semibold text-black">Filters</h3>
@@ -323,6 +435,7 @@ export default function MenuPage() {
           </div>
         </div>
 
+        {/* Category name by group */}
         <CardCategory>
           Limited Time Only
         </CardCategory>

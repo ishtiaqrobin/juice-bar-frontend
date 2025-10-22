@@ -28,13 +28,13 @@ export function HeroCarousel() {
     if (!emblaApi) return;
     const timer = setInterval(() => {
       emblaApi.scrollNext();
-    }, 3500);
+    }, 4000); // 4 seconds
     return () => clearInterval(timer);
   }, [emblaApi]);
 
   return (
     <div className="order-1 md:order-2">
-      <div className="overflow-hidden rounded- " ref={emblaRef}>
+      <div className="relative overflow-hidden rounded- " ref={emblaRef}>
         <div className="flex">
           {slides.map((src) => (
             <div className="min-w-0 flex-[0_0_100%]" key={src}>
@@ -44,16 +44,18 @@ export function HeroCarousel() {
             </div>
           ))}
         </div>
-      </div>
-      <div className="mt-2 flex justify-center gap-1">
-        {slides.map((_, i) => (
-          <span
-            key={i}
-            className={`h-1.5 w-6 rounded-full ${
-              i === selectedIndex ? "bg-stone-900" : "bg-stone-300"
-            }`}
-          />
-        ))}
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex justify-center gap-2 md:gap-2.5">
+          {slides.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 md:h-2 rounded-full ${
+                i === selectedIndex
+                  ? "bg-white w-9 md:w-15"
+                  : "bg-white w-1.5 md:w-2"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
