@@ -17,7 +17,7 @@ export default function AuthLayout({ children }) {
                 <Navbar />
             </div>
             <MobileAuthNavbar className="block md:hidden" />
-            <div className="">
+            <div className="min-h-[500px] pt-0 md:pt-[73px]">
                 {children}
             </div>
             <Footer className="hidden md:block" />

@@ -15,9 +15,9 @@ const MobileAuthNavbar = ({ className = "" }) => {
       case "/login":
         return "Log In";
       case "/registration":
-        return "Lest's Get Started!";
+        return "Let's Get Started!";
       case "/forgot-password":
-        return "Reset Password";
+        return "Forgot Password";
       case "/cart":
         return "My Cart";
       case "/contact":

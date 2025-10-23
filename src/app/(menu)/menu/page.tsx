@@ -13,271 +13,43 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeroCarousel } from "@/components/site/HeroCarousel";
 // import StartOrder from "@/components/site/StartOrder";
 import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg";
+import { useCategories } from "@/hooks/useCategories";
+import { useProducts } from "@/hooks/useProducts";
 
 interface Category {
   id: string;
-  key: string;
-  label: string;
-  order: number;
+  name: string;
+  description?: string;
+  image?: string;
   isActive: boolean;
+  products?: Product[];
 }
 
 interface Product {
   id: string;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  image?: string;
   categoryId: string;
   description?: string;
-  isAvailable: boolean;
-  order: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  stock: number;
+  category?: Category;
 }
-
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
-
-// API Functions
-const fetchCategories = async (): Promise<Category[]> => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await fetch("/api/categories");
-    const result: ApiResponse<Category[]> = await response.json();
-    return result.data || [];
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    // Fallback to default categories
-    return [
-      { id: "1", key: "fruits", label: "Fruits", order: 1, isActive: true },
-      { id: "2", key: "juices", label: "Juices", order: 2, isActive: true },
-      { id: "3", key: "drinks", label: "Drinks", order: 3, isActive: true },
-    ];
-  }
-};
-
-const fetchProducts = async (): Promise<Product[]> => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await fetch("/api/products");
-    const result: ApiResponse<Product[]> = await response.json();
-    return result.data || [];
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    // Fallback to default products
-    return getDefaultProducts();
-  }
-};
-
-// Default products for fallback
-const getDefaultProducts = (): Product[] => [
-  {
-    id: "1",
-    name: "Hot Tea",
-    price: "৳499",
-    image:
-      "https://kfc.com.my/media/catalog/product/h/o/hot-tea.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "2",
-    isAvailable: true,
-    order: 1,
-  },
-  {
-    id: "2",
-    name: "Iced Milo (M)",
-    price: "৳199",
-    image:
-      "https://kfc.com.my/media/catalog/product/i/c/iced-milo-medium.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "1",
-    isAvailable: true,
-    order: 2,
-  },
-  {
-    id: "3",
-    name: "Sprite (M)",
-    price: "৳99",
-    image:
-      "https://kfc.com.my/media/catalog/product/s/p/sprite-glass-large.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "1",
-    isAvailable: true,
-    order: 3,
-  },
-  {
-    id: "4",
-    name: "Iced Americano (12oz)",
-    price: "৳80",
-    image:
-      "https://kfc.com.my/media/catalog/product/i/c/icedamericano_1.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "2",
-    isAvailable: true,
-    order: 4,
-  },
-  {
-    id: "5",
-    name: "Spicy Chicken Bucket",
-    price: "৳499",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
-    categoryId: "3",
-    isAvailable: true,
-    order: 5,
-  },
-  {
-    id: "6",
-    name: "Classic Chicken Burger",
-    price: "৳199",
-    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800",
-    categoryId: "1",
-    isAvailable: true,
-    order: 6,
-  },
-  {
-    id: "7",
-    name: "Crispy Fries",
-    price: "৳99",
-    image:
-      "https://images.unsplash.com/photo-1568782947821-3d660dacc7cb?auto=format&fit=crop&q=80&w=1176",
-    categoryId: "3",
-    isAvailable: true,
-    order: 7,
-  },
-  {
-    id: "8",
-    name: "Cold Cola",
-    price: "৳80",
-    image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800",
-    categoryId: "2",
-    isAvailable: true,
-    order: 8,
-  },
-  {
-    id: "9",
-    name: "Spicy Chicken Bucket",
-    price: "৳499",
-    image:
-      "https://kfc.com.my/media/catalog/product/t/h/the_one_box_combo_a_coleslaw_.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "3",
-    isAvailable: true,
-    order: 9,
-  },
-  {
-    id: "10",
-    name: "Classic Chicken Burger",
-    price: "৳199",
-    image:
-      "https://kfc.com.my/media/catalog/product/6/p/6pcs_bucket_2.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "1",
-    isAvailable: true,
-    order: 10,
-  },
-  {
-    id: "11",
-    name: "Crispy Fries",
-    price: "৳99",
-    image:
-      "https://kfc.com.my/media/catalog/product/2/-/2-pc_combo_k-cheese_crunch.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "3",
-    isAvailable: true,
-    order: 11,
-  },
-  {
-    id: "12",
-    name: "Cold Cola",
-    price: "৳80",
-    image:
-      "https://kfc.com.my/media/catalog/product/k/-/k-cheese_cheezila_kombo.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "2",
-    isAvailable: true,
-    order: 12,
-  },
-  {
-    id: "13",
-    name: "Spicy Chicken Bucket",
-    price: "৳499",
-    image:
-      "https://kfc.com.my/media/catalog/product/2/p/2pc-combo-with-cerealcheezyfries.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "3",
-    isAvailable: true,
-    order: 13,
-  },
-  {
-    id: "14",
-    name: "Classic Chicken Burger",
-    price: "৳199",
-    image:
-      "https://kfc.com.my/media/catalog/product/s/a/savourytomatoegggravy.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "1",
-    isAvailable: true,
-    order: 14,
-  },
-  {
-    id: "15",
-    name: "Crispy Fries",
-    price: "৳99",
-    image:
-      "https://kfc.com.my/media/catalog/product/6/p/6pcs_bucket_2.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "3",
-    isAvailable: true,
-    order: 15,
-  },
-  {
-    id: "16",
-    name: "Cold Cola",
-    price: "৳80",
-    image:
-      "https://kfc.com.my/media/catalog/product/p/m/pm-zinger-double-down-box-meal.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "2",
-    isAvailable: true,
-    order: 16,
-  },
-  {
-    id: "17",
-    name: "Hot Tea",
-    price: "৳499",
-    image:
-      "https://kfc.com.my/media/catalog/product/g/a/garlic_aioli_fries-menu.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "3",
-    isAvailable: true,
-    order: 17,
-  },
-  {
-    id: "18",
-    name: "Iced Milo (M)",
-    price: "৳199",
-    image:
-      "https://kfc.com.my/media/catalog/product/c/e/cempedak-pie.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "1",
-    isAvailable: true,
-    order: 18,
-  },
-  {
-    id: "19",
-    name: "Sprite (M)",
-    price: "৳99",
-    image:
-      "https://kfc.com.my/media/catalog/product/s/t/strawberry_cheese_mochi_menu.png?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=png",
-    categoryId: "3",
-    isAvailable: true,
-    order: 19,
-  },
-  {
-    id: "20",
-    name: "Iced Americano (12oz)",
-    price: "৳80",
-    image:
-      "https://kfc.com.my/media/catalog/product/c/e/cerealcheezyfries-_m_.jpg?quality=80&bg-color=255%2C255%2C255&fit=cover&height=1600&width=1280&auto=webp&format=pjpg",
-    categoryId: "2",
-    isAvailable: true,
-    order: 20,
-  },
-  // Add more default products as needed
-];
 
 export default function MenuPage(): JSX.Element {
-  // Dynamic data states
-  const [categories, setCategories] = React.useState<Category[]>([]);
-  const [products, setProducts] = React.useState<Product[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  const [error, setError] = React.useState<string | null>(null);
+  // Use SWR hooks for data fetching
+  const {
+    categories,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+  } = useCategories();
+  const {
+    products,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useProducts();
 
   // UI states
   const [selectedCategory, setSelectedCategory] = React.useState<string>("");
@@ -312,35 +84,12 @@ export default function MenuPage(): JSX.Element {
     }
   };
 
-  // Data fetching effect
+  // Set first category as selected when categories load
   React.useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [categoriesData, productsData] = await Promise.all([
-          fetchCategories(),
-          fetchProducts(),
-        ]);
-
-        setCategories(categoriesData);
-        setProducts(productsData);
-
-        // Set first category as selected if available
-        if (categoriesData.length > 0) {
-          setSelectedCategory(categoriesData[0].key);
-        }
-      } catch (err) {
-        setError("Failed to load menu data");
-        console.error("Error loading data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0].id);
+    }
+  }, [categories, selectedCategory]);
 
   // Function to get responsive offset based on screen size
   const getResponsiveOffset = (): number => {
@@ -400,8 +149,8 @@ export default function MenuPage(): JSX.Element {
   }, [updateTabIndicator, categories]);
 
   // Function to scroll to specific section
-  const scrollToSection = (categoryKey: string): void => {
-    const targetRef = sectionRefs.current[categoryKey];
+  const scrollToSection = (categoryId: string): void => {
+    const targetRef = sectionRefs.current[categoryId];
 
     if (targetRef) {
       const offset = getResponsiveOffset();
@@ -414,10 +163,10 @@ export default function MenuPage(): JSX.Element {
   };
 
   // Handle category tab click
-  const handleCategoryClick = (category: string): void => {
+  const handleCategoryClick = (categoryId: string): void => {
     setIsManualSelection(true);
-    setSelectedCategory(category);
-    scrollToSection(category);
+    setSelectedCategory(categoryId);
+    scrollToSection(categoryId);
 
     // Reset manual selection flag after scroll animation completes
     setTimeout(() => {
@@ -440,7 +189,7 @@ export default function MenuPage(): JSX.Element {
       // Reset to top and first category on navigation
       window.scrollTo(0, 0);
       if (categories.length > 0) {
-        setSelectedCategory(categories[0].key);
+        setSelectedCategory(categories[0].id);
       }
       setIsManualSelection(false);
     };
@@ -461,14 +210,14 @@ export default function MenuPage(): JSX.Element {
       const threshold = getResponsiveThreshold();
 
       // Find which section is currently in view
-      let currentSection = categories[0]?.key || "";
+      let currentSection = categories[0]?.id || "";
 
       for (const category of categories) {
-        const sectionRef = sectionRefs.current[category.key];
+        const sectionRef = sectionRefs.current[category.id];
         if (sectionRef) {
           const sectionTop = sectionRef.offsetTop;
           if (scrollPosition >= sectionTop - threshold) {
-            currentSection = category.key;
+            currentSection = category.id;
           }
         }
       }
@@ -496,14 +245,14 @@ export default function MenuPage(): JSX.Element {
       if (categories.length > 0) {
         const scrollPosition = window.scrollY;
         const threshold = getResponsiveThreshold();
-        let currentSection = categories[0]?.key || "";
+        let currentSection = categories[0]?.id || "";
 
         for (const category of categories) {
-          const sectionRef = sectionRefs.current[category.key];
+          const sectionRef = sectionRefs.current[category.id];
           if (sectionRef) {
             const sectionTop = sectionRef.offsetTop;
             if (scrollPosition >= sectionTop - threshold) {
-              currentSection = category.key;
+              currentSection = category.id;
             }
           }
         }
@@ -561,18 +310,18 @@ export default function MenuPage(): JSX.Element {
   const groupedItems: { [key: string]: Product[] } = React.useMemo(() => {
     const grouped: { [key: string]: Product[] } = {};
 
-    categories.forEach((category) => {
-      grouped[category.key] = products
-        .filter((product) => product.categoryId === category.id)
-        .filter((product) => !showOnlyAvailable || product.isAvailable)
-        .sort((a, b) => a.order - b.order);
+    categories.forEach((category: Category) => {
+      grouped[category.id] = products
+        .filter((product: Product) => product.categoryId === category.id)
+        .filter((product: Product) => !showOnlyAvailable || product.isActive)
+        .sort((a: Product, b: Product) => a.name.localeCompare(b.name));
     });
 
     return grouped;
   }, [categories, products, showOnlyAvailable]);
 
   // Loading component
-  if (loading) {
+  if (categoriesLoading || productsLoading) {
     return (
       <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
         <div className="flex items-center justify-center h-64">
@@ -586,12 +335,12 @@ export default function MenuPage(): JSX.Element {
   }
 
   // Error component
-  if (error) {
+  if (categoriesError || productsError) {
     return (
       <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-red-600 mb-4">Failed to load menu data</p>
             <button
               onClick={() => window.location.reload()}
               className="bg-primary text-white px-4 py-2 rounded"
@@ -717,22 +466,24 @@ export default function MenuPage(): JSX.Element {
               className="relative flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth text-sm leading-[18px] font-medium px-10"
             >
               {categories
-                .filter((cat) => cat.isActive)
-                .sort((a, b) => a.order - b.order)
-                .map((cat) => (
+                .filter((cat: Category) => cat.isActive)
+                .sort((a: Category, b: Category) =>
+                  a.name.localeCompare(b.name)
+                )
+                .map((cat: Category) => (
                   <button
-                    key={cat.key}
+                    key={cat.id}
                     ref={(el) => {
-                      tabRefs.current[cat.key] = el;
+                      tabRefs.current[cat.id] = el;
                     }}
                     className={`px-4 h-[47.5px] hover:cursor-pointer whitespace-nowrap transition-colors duration-200 ${
-                      selectedCategory === cat.key
+                      selectedCategory === cat.id
                         ? "text-primary"
                         : "text-[#0009]"
                     }`}
-                    onClick={() => handleCategoryClick(cat.key)}
+                    onClick={() => handleCategoryClick(cat.id)}
                   >
-                    {cat.label}
+                    {cat.name}
                   </button>
                 ))}
               {/* Animated underline indicator */}
@@ -755,22 +506,22 @@ export default function MenuPage(): JSX.Element {
 
         {/* Display products by groups - Dynamic */}
         {categories
-          .filter((cat) => cat.isActive)
-          .sort((a, b) => a.order - b.order)
-          .map((category) => (
+          .filter((cat: Category) => cat.isActive)
+          .sort((a: Category, b: Category) => a.name.localeCompare(b.name))
+          .map((category: Category) => (
             <div
-              key={category.key}
+              key={category.id}
               ref={(el) => {
-                sectionRefs.current[category.key] = el;
+                sectionRefs.current[category.id] = el;
               }}
             >
-              <CardCategory>{category.label}</CardCategory>
+              <CardCategory>{category.name}</CardCategory>
               <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {groupedItems[category.key]?.map((item) => (
+                {groupedItems[category.id]?.map((item: Product) => (
                   <Card key={item.id} className="">
                     <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
                       <Image
-                        src={item.image}
+                        src={item.image || "/placeholder-image.jpg"}
                         alt={item.name}
                         width={220}
                         height={220}
@@ -782,13 +533,15 @@ export default function MenuPage(): JSX.Element {
                           {item.name}
                         </CardTitle>
                         <div className="mt-2 flex-col items-center justify-between">
-                          <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded-sm">
-                            <p className="text-[11px] leading-[14px] font-normal text-white">
-                              New!
-                            </p>
-                          </button>
+                          {item.isFeatured && (
+                            <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded-sm">
+                              <p className="text-[11px] leading-[14px] font-normal text-white">
+                                Featured!
+                              </p>
+                            </button>
+                          )}
                           <p className="mt-2 text-[17px] leading-[22px] font-bold text-black">
-                            {item.price}.00
+                            ৳{item.price}
                           </p>
                         </div>
                       </div>
