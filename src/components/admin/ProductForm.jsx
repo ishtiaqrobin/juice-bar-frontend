@@ -95,12 +95,14 @@ export default function ProductForm({ product, onSave }) {
 
     return (
         <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader>
-                <CardTitle>{product ? 'Edit Product' : 'Add New Product'}</CardTitle>
-            </CardHeader>
+            {/* <CardHeader>
+            </CardHeader> */}
+            <CardTitle className="text-2xl font-bold">
+                {product ? 'Edit Product' : 'Add New Product'}
+            </CardTitle>
             <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
+                <form onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-lg space-y-4 mt-5">
+                    <div className="flex flex-col gap-2">
                         <Label htmlFor="name">Product Name</Label>
                         <Input
                             id="name"
@@ -110,7 +112,7 @@ export default function ProductForm({ product, onSave }) {
                         />
                     </div>
 
-                    <div>
+                    <div className="flex flex-col gap-2">
                         <Label htmlFor="description">Description</Label>
                         <Textarea
                             id="description"
@@ -120,7 +122,7 @@ export default function ProductForm({ product, onSave }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
+                        <div className="flex flex-col gap-2">
                             <Label htmlFor="price">Price</Label>
                             <Input
                                 id="price"
@@ -132,7 +134,7 @@ export default function ProductForm({ product, onSave }) {
                             />
                         </div>
 
-                        <div>
+                        <div className="flex flex-col gap-2">
                             <Label htmlFor="stock">Stock</Label>
                             <Input
                                 id="stock"
@@ -143,7 +145,7 @@ export default function ProductForm({ product, onSave }) {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="flex flex-col gap-2">
                         <Label htmlFor="category">Category</Label>
                         <Select
                             value={formData.categoryId}
@@ -162,7 +164,7 @@ export default function ProductForm({ product, onSave }) {
                         </Select>
                     </div>
 
-                    <div>
+                    <div className="flex flex-col gap-2">
                         <Label htmlFor="image">Product Image</Label>
                         <Input
                             id="image"

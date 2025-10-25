@@ -11,10 +11,69 @@ import IconActiveRewards from "@/assets/svg/icon_reward_active.svg";
 import IconAccount from "@/assets/svg/icon_account.svg";
 import IconActiveAccount from "@/assets/svg/icon_account_active.svg";
 import IconCart from "@/assets/svg/icon_cart.svg";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import React from "react";
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [showAccountPopup, setShowAccountPopup] = React.useState(false);
+
+  const toggleAccountPopup = () => {
+    setShowAccountPopup(!showAccountPopup);
+  };
+
+  const handleCloseAccountPopup = () => {
+    setShowAccountPopup(false);
+  };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" });
+    setShowAccountPopup(false);
+  };
+
+  const handleNavigateToProfile = () => {
+    router.push("/profile");
+    setShowAccountPopup(false);
+  };
+
+  const handleNavigateToDashboard = () => {
+    router.push("/dashboard");
+    setShowAccountPopup(false);
+  };
+
+  // Close popup when clicking outside and prevent scroll when popup is open
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showAccountPopup &&
+        !(event.target as Element).closest(".account-popup-container")
+      ) {
+        setShowAccountPopup(false);
+      }
+    };
+
+    // Prevent scroll when popup is open
+    if (showAccountPopup) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [showAccountPopup]);
+
+  // Don't render while session is loading
+  // if (status === "loading") {
+  //   return null;
+  // }
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 h-[89px] md:hidden">
@@ -103,26 +162,106 @@ export function BottomTabBar() {
             </Link>
           </div>
 
-          <div>
-            <Link href="/login" className="h-[45px] flex flex-col items-center">
-              <div className="h-[28px] flex items-center">
-                <Image
-                  src={
-                    pathname === "/login" ||
-                    pathname === "/registration" ||
-                    pathname === "/forgot-password"
-                      ? IconActiveAccount
-                      : IconAccount
-                  }
-                  alt="Account Icon"
-                  width={28}
-                  height={28}
+          <div className="relative account-popup-container">
+            {session ? (
+              <button
+                onClick={toggleAccountPopup}
+                className="h-[45px] flex flex-col items-center"
+              >
+                <div className="h-[28px] flex items-center">
+                  <Image
+                    src={
+                      pathname === "/profile" || pathname === "/dashboard"
+                        ? IconActiveAccount
+                        : IconAccount
+                    }
+                    alt="Account Icon"
+                    width={28}
+                    height={28}
+                  />
+                </div>
+                <span className="text-[10px] leading-[9px] font-semibold text-[#969696] mt-2">
+                  Account
+                </span>
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="h-[45px] flex flex-col items-center"
+              >
+                <div className="h-[28px] flex items-center">
+                  <Image
+                    src={
+                      pathname === "/login" ||
+                      pathname === "/registration" ||
+                      pathname === "/forgot-password"
+                        ? IconActiveAccount
+                        : IconAccount
+                    }
+                    alt="Account Icon"
+                    width={28}
+                    height={28}
+                  />
+                </div>
+                <span className="text-[10px] leading-[9px] font-semibold text-[#969696] mt-2">
+                  Log In
+                </span>
+              </Link>
+            )}
+
+            {/* Account Popup Bottom Sheet */}
+            {showAccountPopup && session && (
+              <div className="fixed inset-0 z-50 flex items-end justify-center">
+                {/* Backdrop */}
+                <button
+                  aria-label="Close account menu"
+                  onClick={handleCloseAccountPopup}
+                  className="absolute inset-0 bg-black/50"
                 />
+
+                {/* Sheet */}
+                <div className="relative w-full h-[203px] bg-white overflow-hidden account-popup-container">
+                  {/* Header */}
+                  <div className="flex items-center justify-between pt-5 pb-4 px-5">
+                    <h3 className="text-base leading-[20px] font-semibold text-black">
+                      Account
+                    </h3>
+                    <button
+                      onClick={handleCloseAccountPopup}
+                      className="bg-[#969696] px-6 py-3 rounded-full text-base leading-5 font-medium text-white hover:cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="px-5 space-y-3">
+                    <button
+                      onClick={handleNavigateToProfile}
+                      className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"
+                    >
+                      Profile
+                    </button>
+
+                    {session?.user?.role === "ADMIN" ? (
+                      <button
+                        onClick={handleNavigateToDashboard}
+                        className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"
+                      >
+                        Dashboard
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"
+                      >
+                        Sign Out
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-              <span className="text-[10px] leading-[9px] font-semibold text-[#969696] mt-2">
-                Log In
-              </span>
-            </Link>
+            )}
           </div>
         </div>
       </div>

@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  password      String?
-  image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  phone     String?  @unique
+  name      String?
+  password  String?
+  image     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  orders   Order[]
+
   @@map("users")
 }
 
@@ -67,49 +68,49 @@ model VerificationToken {
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String    @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
   image       String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  products    Product[]
-  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
   @@map("categories")
 }
 
 model Product {
-  id          String    @id @default(cuid())
-  name        String    @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
-  price       Decimal   @db.Decimal(10, 2)
+  price       Decimal  @db.Decimal(10, 2)
   image       String?
-  isActive    Boolean   @default(true)
-  isFeatured  Boolean   @default(false)
-  stock       Int       @default(0)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  stock       Int      @default(0)
   categoryId  String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  category    Category  @relation(fields: [categoryId], references: [id])
-  orderItems  OrderItem[]
-  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+
   @@map("products")
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  userId      String
-  status      OrderStatus  @default(PENDING)
-  total       Decimal     @db.Decimal(10, 2)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  
-  user        User        @relation(fields: [userId], references: [id])
-  items       OrderItem[]
-  
+  id        String      @id @default(cuid())
+  userId    String
+  status    OrderStatus @default(PENDING)
+  total     Decimal     @db.Decimal(10, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
   @@map("orders")
 }
 
@@ -119,10 +120,10 @@ model OrderItem {
   productId String
   quantity  Int
   price     Decimal @db.Decimal(10, 2)
-  
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
-  
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
   @@map("order_items")
 }
 

@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/site/Navbar";
 import { BottomTabBar } from "@/components/site/BottomTabBar";
 import { Footer } from "@/components/site/Footer";
-import MobileMenuNavbar from "../../components/mobile/MobileMenuNavbar";
+import MobileNavbar from "../../components/mobile/MobileNavbar";
 
 export const metadata = {
     title: "Menu - Delivery the best deals to you",
@@ -14,7 +14,7 @@ export default function MenuLayout({ children }) {
             <div className="hidden md:block">
                 <Navbar />
             </div>
-            <MobileMenuNavbar className="block md:hidden" />
+            <MobileNavbar className="block md:hidden" />
             <div className="min-h-[400px] pt-0 md:pt-[73px]">
                 {children}
             </div>

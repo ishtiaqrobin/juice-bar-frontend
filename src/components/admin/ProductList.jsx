@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useProducts } from '@/hooks/useProducts'
 import { Switch } from '@/components/ui/switch'
+import Image from 'next/image'
 
 export default function ProductList() {
     const router = useRouter()
@@ -61,7 +62,7 @@ export default function ProductList() {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="mx-auto max-w-5xl space-y-4">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Products</h2>
                 <Button onClick={() => router.push('/admin/products/new')}>
@@ -69,14 +70,19 @@ export default function ProductList() {
                 </Button>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {products.map((product) => (
-                    <Card key={product.id}>
+                    <Card key={product.id} className="bg-gray-100 border p- flex flex-col hover:shadow-lg transition">
                         <CardHeader>
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col justify-between items-start">
+                                <Image
+                                    src={'/'}
+                                    width={150}
+                                    height={150}
+                                    className="w-full h-40 py-6"></Image>
                                 <div>
                                     <CardTitle className="flex items-center gap-2">
-                                        {product.name}
+                                        <p className='text-base font-semibold'>Name: {product.name}</p>
                                         {product.isFeatured && (
                                             <Badge variant="secondary">Featured</Badge>
                                         )}
@@ -93,7 +99,7 @@ export default function ProductList() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center px-6 justify-between">
                                 <div className="flex items-center space-x-4">
                                     <div className="flex items-center space-x-2">
                                         <Switch

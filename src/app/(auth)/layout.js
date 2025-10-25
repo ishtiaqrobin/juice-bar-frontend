@@ -1,9 +1,9 @@
 // "use client";
 
 import { Navbar } from "@/components/site/Navbar";
-import MobileAuthNavbar from "../../components/mobile/MobileAuthNavbar";
 import { Footer } from "@/components/site/Footer";
 import { BottomTabBar } from "@/components/site/BottomTabBar";
+import MobileNavbar from "../../components/mobile/MobileNavbar";
 
 export const metadata = {
     title: "Friends Juice Bar - Authentication",
@@ -16,7 +16,7 @@ export default function AuthLayout({ children }) {
             <div className="hidden md:block">
                 <Navbar />
             </div>
-            <MobileAuthNavbar className="block md:hidden" />
+            <MobileNavbar className="block md:hidden" />
             <div className="min-h-[500px] pt-0 md:pt-[73px]">
                 {children}
             </div>

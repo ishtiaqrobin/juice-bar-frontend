@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import MobileAuthNavbar from "../../components/mobile/MobileAuthNavbar";
+import MobileNavbar from "../../components/mobile/MobileNavbar";
 
 export const metadata = {
     title: "My Cart",
@@ -13,7 +13,7 @@ export default function CartLayout({ children }) {
             <div className="hidden md:block">
                 <Navbar />
             </div>
-            <MobileAuthNavbar className="block md:hidden" />
+            <MobileNavbar className="block md:hidden" />
             <div className="min-h-[400px] pt-0 md:pt-[73px]">
                 {children}
             </div>

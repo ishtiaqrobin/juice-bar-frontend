@@ -6,14 +6,21 @@ const AdminPage = () => {
     return (
         <div className="mx-auto max-w-6xl text-center my-12">
             <p className="text-4xl font-extrabold leading-tight tracking-tight text-stone-900">Admin Page</p>
-            <p className="mt-5">Go to
+            <div className="flex justify-center gap-3 mt-5">
                 <Link
-                    href="/admin/users"
+                    href="/admin/products"
                     className="ml-3"
                 >
-                    <Button className="hover:cursor-pointer">Users</Button>
+                    <Button className="hover:cursor-pointer">Products</Button>
                 </Link>
-            </p>
+                <Link
+                    href="/admin/products/new"
+                    className="ml-3"
+                >
+                    <Button className="hover:cursor-pointer">Add New Product</Button>
+                </Link>
+            </div>
+
         </div>
     );
 };

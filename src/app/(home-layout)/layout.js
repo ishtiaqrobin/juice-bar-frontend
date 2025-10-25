@@ -2,7 +2,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { BottomTabBar } from "@/components/site/BottomTabBar";
 import { Footer } from "@/components/site/Footer";
 import AppFooter from "@/components/site/AppFooter";
-import MobileHomeNavbar from "../../components/mobile/MobileHomeNavbar";
+import MobileNavbar from "../../components/mobile/MobileNavbar";
 
 export const metadata = {
     title: "FreshFruit - Fruits & Juices",
@@ -15,7 +15,7 @@ export default function HomeLayout({ children }) {
             <div className="hidden md:block">
                 <Navbar />
             </div>
-            <MobileHomeNavbar className="block md:hidden" />
+            <MobileNavbar className="block md:hidden" />
             <div className="min-h-[400px] pt-0 md:pt-[73px]">
                 {children}
             </div>

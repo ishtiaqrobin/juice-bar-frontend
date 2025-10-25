@@ -6,20 +6,33 @@ import { MobileSideDrawer } from "@/components/site/MobileSideDrawer";
 import Image from "next/image";
 import IconLogin from "@/assets/svg/icon_account.svg";
 import IconActiveLogin from "@/assets/svg/icon_account_active.svg";
+import { useSession, signOut } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import IconOrder from "@/assets/svg/icon_cart.svg";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/menu", label: "Menu" },
-  { href: "/promotions", label: "Promotions" },
   { href: "/rewards", label: "Rewards" },
-  { href: "/contact", label: "Contact" },
+  { href: "/promotions", label: "Promotions" },
+  // { href: "/contact", label: "Contact" },
   { href: "/admin", label: "Admin" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  // Don't render while session is loading
+  if (status === "loading") {
+    return null;
+  }
 
   return (
     <header className="w-full bg-white fixed top-0 z-60 shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
@@ -54,30 +67,76 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-8 text-sm leading-[21px] font-medium">
-          <div className="flex items-center gap-1 hover:cursor-pointer group">
-            <div className="relative">
-              <Image
-                src={IconLogin}
-                alt="Login Icon"
-                width={18}
-                height={18}
-                className="group-hover:opacity-0 transition-opacity"
-              />
-              <Image
-                src={IconActiveLogin}
-                alt="Login Icon"
-                width={18}
-                height={18}
-                className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              />
+          {session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-1 hover:cursor-pointer group">
+                  <div className="relative">
+                    <Image
+                      src={IconLogin}
+                      alt="Login Icon"
+                      width={18}
+                      height={18}
+                      className="group-hover:opacity-0 transition-opacity"
+                    />
+                    <Image
+                      src={IconActiveLogin}
+                      alt="Login Icon"
+                      width={18}
+                      height={18}
+                      className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                  <span className="text-sm leading-[21px] font-medium group-hover:text-red-600 transition-colors duration-200">
+                    Account
+                  </span>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 mt-8">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="w-full cursor-pointer">
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="w-full cursor-pointer">
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                >
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-1 hover:cursor-pointer group">
+              <div className="relative">
+                <Image
+                  src={IconLogin}
+                  alt="Login Icon"
+                  width={18}
+                  height={18}
+                  className="group-hover:opacity-0 transition-opacity"
+                />
+                <Image
+                  src={IconActiveLogin}
+                  alt="Login Icon"
+                  width={18}
+                  height={18}
+                  className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <Link
+                href="/login"
+                className="text-sm leading-[21px] font-medium group-hover:text-red-600 transition-colors duration-200"
+              >
+                Log In
+              </Link>
             </div>
-            <Link
-              href="/login"
-              className="text-sm leading-[21px] font-medium group-hover:text-red-600 transition-colors duration-"
-            >
-              Log In
-            </Link>
-          </div>
+          )}
           <div className="flex items-center gap-6">
             <Link href="/cart">
               <Image src={IconOrder} alt="Order Icon" width={28} height={28} />

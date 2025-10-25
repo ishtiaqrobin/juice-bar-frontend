@@ -26,7 +26,7 @@ const ForgotPassword = () => {
                     <div className="grid gap-2">
                         <Input id="email" type="email" placeholder="Email" />
                     </div>
-                    <Button className="bg-primary text-white h-10">Submit Now</Button>
+                    <Button className="bg-primary text-white h-10 hover:cursor-pointer">Submit Now</Button>
                     <p className="text-sm text-stone-700">
                         Back to{" "}
                         <Link href="/login" className="text-primary">
