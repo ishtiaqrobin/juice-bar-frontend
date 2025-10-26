@@ -35,7 +35,12 @@ export function Navbar() {
   }
 
   return (
-    <header className="w-full bg-white fixed top-0 z-60 shadow-[0_5px_4px_-2px_rgba(0,0,0,0.1)]">
+    <header
+      className={cn(
+        "w-full bg-white fixed top-0 z-60 ",
+        pathname === "/" ? "border-b border-[#E5E7EB]" : "shadow-md"
+      )}
+    >
       <div className="max-w-[940px] mx-auto flex items-center justify-between px- py- md:py-">
         {/* Mobile hamburger */}
         <div className="md:hidden">
@@ -55,7 +60,7 @@ export function Navbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm leading-[21px] font-medium hover:text-red-600 transition-colors duration-200 border-b-[3px] py-6",
+                "text-sm leading-[21px] font-normal hover:text-red-600 transition-colors duration-200 border-b-[3px] py-6",
                 pathname === item.href
                   ? "text-primary border-primary"
                   : "text-black border-transparent"

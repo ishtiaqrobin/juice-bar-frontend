@@ -1,22 +1,8 @@
 import "./globals.css";
-import localFont from 'next/font/local';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import AuthProvider from "@/components/providers/AuthProvider";
-
-const national2 = localFont({
-  src: [
-    {
-      path: '../fonts/National2-Regular.otf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../fonts/National2-Bold.otf',
-      weight: '700',
-      style: 'normal',
-    }
-  ],
-  variable: '--font-national2'
-});
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {
   title: "FreshFruit - Fruits & Juices",
@@ -25,12 +11,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light" className={`bg-background text-foreground ${national2.variable}`}>
-      <body className={national2.className}>
+    <html lang="en" data-theme="light" className={`bg-background text-foreground ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={GeistSans.className}>
         <AuthProvider>
           <main className="min-h-[60vh] pb-20 md:pb-0">
             {children}
           </main>
+          <Toaster />
         </AuthProvider>
       </body>
     </html>

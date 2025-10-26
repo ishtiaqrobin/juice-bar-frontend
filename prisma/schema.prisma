@@ -82,17 +82,21 @@ model Category {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  price       Decimal  @db.Decimal(10, 2)
-  image       String?
-  isActive    Boolean  @default(true)
-  isFeatured  Boolean  @default(false)
-  stock       Int      @default(0)
-  categoryId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  description        String?
+  price              Decimal  @db.Decimal(10, 2)
+  image              String?
+  isActive           Boolean  @default(true)
+  stock              Int      @default(0)
+  unitType           String   @default("piece") // "piece" or "kg"
+  featured           String? // "New", "Best Seller", "Special Price", "Promo", etc.
+  addedDate          DateTime @default(now())
+  discountPrice      Decimal? @db.Decimal(10, 2)
+  discountPercentage Decimal? @db.Decimal(5, 2) // 0.00 to 100.00
+  categoryId         String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   category   Category    @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]

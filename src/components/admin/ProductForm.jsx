@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { useCategories } from '@/hooks/useCategories'
+import { toast } from 'sonner'
 
 export default function ProductForm({ product, onSave }) {
     const router = useRouter()
@@ -21,10 +22,49 @@ export default function ProductForm({ product, onSave }) {
         image: '',
         categoryId: '',
         stock: '',
-        isFeatured: false,
+        unitType: 'piece',
+        featured: 'none',
+        addedDate: new Date().toISOString().split('T')[0],
+        discountPrice: '',
+        discountPercentage: '',
         isActive: true
     })
     const [isLoading, setIsLoading] = useState(false)
+    const [calculatedDiscountPrice, setCalculatedDiscountPrice] = useState('')
+    const [selectKey, setSelectKey] = useState(0)
+
+    // Calculate discount price based on percentage
+    const calculateDiscountPrice = (price, percentage) => {
+        if (!price || !percentage) return ''
+        const originalPrice = parseFloat(price)
+        const discountPercent = parseFloat(percentage)
+        if (discountPercent > 100) return ''
+        const discountAmount = (originalPrice * discountPercent) / 100
+        return (originalPrice - discountAmount).toFixed(2)
+    }
+
+    // Handle discount percentage change
+    const handleDiscountPercentageChange = (value) => {
+        setFormData(prev => ({ ...prev, discountPercentage: value }))
+        if (formData.price && value) {
+            const calculated = calculateDiscountPrice(formData.price, value)
+            setCalculatedDiscountPrice(calculated)
+            setFormData(prev => ({ ...prev, discountPrice: calculated }))
+        } else {
+            setCalculatedDiscountPrice('')
+            setFormData(prev => ({ ...prev, discountPrice: '' }))
+        }
+    }
+
+    // Handle price change
+    const handlePriceChange = (value) => {
+        setFormData(prev => ({ ...prev, price: value }))
+        if (formData.discountPercentage && value) {
+            const calculated = calculateDiscountPrice(value, formData.discountPercentage)
+            setCalculatedDiscountPrice(calculated)
+            setFormData(prev => ({ ...prev, discountPrice: calculated }))
+        }
+    }
 
     useEffect(() => {
         if (product) {
@@ -35,15 +75,40 @@ export default function ProductForm({ product, onSave }) {
                 image: product.image || '',
                 categoryId: product.categoryId || '',
                 stock: product.stock?.toString() || '',
-                isFeatured: product.isFeatured || false,
+                unitType: product.unitType || 'piece',
+                featured: product.featured ? product.featured : 'none',
+                addedDate: product.addedDate ? new Date(product.addedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                discountPrice: product.discountPrice?.toString() || '',
+                discountPercentage: product.discountPercentage?.toString() || '',
                 isActive: product.isActive !== false
             })
+            // Force re-render of select components
+            setSelectKey(prev => prev + 1)
         }
     }, [product])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setIsLoading(true)
+
+        // Validate required fields
+        if (!formData.name.trim()) {
+            toast.error('Product name is required')
+            setIsLoading(false)
+            return
+        }
+
+        if (!formData.price || parseFloat(formData.price) <= 0) {
+            toast.error('Valid price is required')
+            setIsLoading(false)
+            return
+        }
+
+        if (!formData.categoryId || formData.categoryId.trim() === '') {
+            toast.error('Please select a category')
+            setIsLoading(false)
+            return
+        }
 
         try {
             const url = product ? `/api/products/${product.id}` : '/api/products'
@@ -58,14 +123,15 @@ export default function ProductForm({ product, onSave }) {
             })
 
             if (response.ok) {
+                toast.success(product ? 'Product updated successfully!' : 'Product created successfully!')
                 onSave?.()
-                router.push('/admin')
+                router.push('/admin/products')
             } else {
                 const error = await response.json()
-                alert(error.error || 'Failed to save product')
+                toast.error(error.error || 'Failed to save product')
             }
         } catch (error) {
-            alert('Failed to save product')
+            toast.error('Failed to save product')
         } finally {
             setIsLoading(false)
         }
@@ -87,27 +153,29 @@ export default function ProductForm({ product, onSave }) {
             if (response.ok) {
                 const result = await response.json()
                 setFormData(prev => ({ ...prev, image: result.url }))
+                toast.success('Image uploaded successfully!')
             }
         } catch (error) {
-            alert('Failed to upload image')
+            toast.error('Failed to upload image')
         }
     }
 
     return (
-        <Card className="w-full max-w-2xl mx-auto">
+        <Card className="w-full mx-auto">
             {/* <CardHeader>
             </CardHeader> */}
             <CardTitle className="text-2xl font-bold">
                 {product ? 'Edit Product' : 'Add New Product'}
             </CardTitle>
             <CardContent>
-                <form onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-lg space-y-4 mt-5">
+                <form onSubmit={handleSubmit} className="bg-[#FAFAF9] p-4 md:p-6 rounded-lg space-y-4 mt-4">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="name">Product Name</Label>
+                        <Label htmlFor="name">Product Name {""}<span className="text-red-500">*</span></Label>
                         <Input
                             id="name"
                             value={formData.name}
                             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Enter product name"
                             required
                         />
                     </div>
@@ -115,99 +183,191 @@ export default function ProductForm({ product, onSave }) {
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="description">Description</Label>
                         <Textarea
+                            rows={4}
                             id="description"
                             value={formData.description}
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Enter product description"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="price">Price</Label>
+                            <Label htmlFor="price">Price {""}<span className="text-red-500">*</span></Label>
                             <Input
                                 id="price"
                                 type="number"
                                 step="0.01"
                                 value={formData.price}
-                                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                                onChange={(e) => handlePriceChange(e.target.value)}
                                 required
+                                placeholder="Enter product price"
                             />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="stock">Stock</Label>
+                            <Label htmlFor="discountPercentage">Discount Percentage</Label>
+                            <Input
+                                id="discountPercentage"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                value={formData.discountPercentage}
+                                onChange={(e) => handleDiscountPercentageChange(e.target.value)}
+                                placeholder="Enter percentage (0-100)%"
+                            />
+                            {calculatedDiscountPrice && (
+                                <p className="text-sm text-green-600">
+                                    Calculated Discount Price: ${calculatedDiscountPrice}
+                                </p>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="manualDiscountPrice">Manual Discount Price  </Label>
+                            <Input
+                                id="manualDiscountPrice"
+                                type="number"
+                                step="0.01"
+                                value={formData.discountPrice}
+                                onChange={(e) => setFormData(prev => ({ ...prev, discountPrice: e.target.value }))}
+                                placeholder="Enter manual discount price"
+                            />
+                            <p className="text-xs text-gray-500">
+                                Leave empty to use percentage-based discount
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="unitType">Unit Type</Label>
+                            <Select
+                                key={`unitType-${selectKey}`}
+                                value={formData.unitType}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, unitType: value }))}
+                            >
+                                <SelectTrigger className="bg-white w-full">
+                                    <SelectValue placeholder="Select unit type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="piece">Piece</SelectItem>
+                                    <SelectItem value="kg">Kg</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="stock">Stock ({formData.unitType}) {""}<span className="text-red-500">*</span></Label>
                             <Input
                                 id="stock"
                                 type="number"
                                 value={formData.stock}
                                 onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+                                placeholder="Enter product stock"
+                                required
                             />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="category">Category {""}<span className="text-red-500">*</span></Label>
+                            <Select
+                                key={`category-${selectKey}`}
+                                value={formData.categoryId}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value }))}
+                                required
+                            >
+                                <SelectTrigger className="bg-white w-full">
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent >
+                                    {categories.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="category">Category</Label>
-                        <Select
-                            value={formData.categoryId}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value }))}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="image">Product Image</Label>
+                            <Input
+                                id="image"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                            {formData.image && (
+                                <div className="mt-2">
+                                    <img
+                                        src={formData.image}
+                                        alt="Product preview"
+                                        className="w-32 h-32 object-cover rounded"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="image">Product Image</Label>
-                        <Input
-                            id="image"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                        />
-                        {formData.image && (
-                            <div className="mt-2">
-                                <img
-                                    src={formData.image}
-                                    alt="Product preview"
-                                    className="w-32 h-32 object-cover rounded"
-                                />
-                            </div>
-                        )}
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="featured">Featured Product</Label>
+                            <Select
+                                key={`featured-${selectKey}`}
+                                value={formData.featured}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, featured: value }))}
+                            >
+                                <SelectTrigger className="bg-white w-full">
+                                    <SelectValue placeholder="Select featured type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    <SelectItem value="New">New</SelectItem>
+                                    <SelectItem value="Best Seller">Best Seller</SelectItem>
+                                    <SelectItem value="Special Price">Special Price</SelectItem>
+                                    <SelectItem value="Seasonal Offers">Seasonal Offers</SelectItem>
+                                    <SelectItem value="Summer Special">Summer Special</SelectItem>
+                                    <SelectItem value="Winter Warmers">Winter Warmers</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label htmlFor="addedDate">Product Added Date</Label>
+                            <Input
+                                id="addedDate"
+                                type="date"
+                                value={formData.addedDate}
+                                onChange={(e) => setFormData(prev => ({ ...prev, addedDate: e.target.value }))}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="featured"
-                                checked={formData.isFeatured}
-                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isFeatured: checked }))}
-                            />
-                            <Label htmlFor="featured">Featured Product</Label>
-                        </div>
-
+                        <Label htmlFor="active">Active Status</Label>
                         <div className="flex items-center space-x-2">
                             <Switch
                                 id="active"
                                 checked={formData.isActive}
                                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                             />
-                            <Label htmlFor="active">Active</Label>
                         </div>
                     </div>
 
-                    <div className="flex justify-end space-x-2">
-                        <Button type="button" variant="outline" onClick={() => router.back()}>
+                    <div className="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-2">
+                        <Button
+                            className="hover:cursor-pointer"
+                            type="button"
+                            variant="outline"
+                            onClick={() => router.back()}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button
+                            className="hover:cursor-pointer"
+                            type="submit" disabled={isLoading}
+                        >
                             {isLoading ? 'Saving...' : 'Save Product'}
                         </Button>
                     </div>

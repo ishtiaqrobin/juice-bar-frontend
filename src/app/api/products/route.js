@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 // GET /api/products - Get all products
 export async function GET(request) {
@@ -33,8 +34,16 @@ export async function GET(request) {
             prisma.product.count({ where })
         ])
 
+        // Convert Decimal objects to plain numbers
+        const serializedProducts = products.map(product => ({
+            ...product,
+            price: product.price ? parseFloat(product.price.toString()) : 0,
+            discountPrice: product.discountPrice ? parseFloat(product.discountPrice.toString()) : null,
+            discountPercentage: product.discountPercentage ? parseFloat(product.discountPercentage.toString()) : null
+        }))
+
         return NextResponse.json({
-            products,
+            products: serializedProducts,
             pagination: {
                 page,
                 limit,
@@ -43,6 +52,7 @@ export async function GET(request) {
             }
         })
     } catch (error) {
+        console.error('Error fetching products:', error)
         return NextResponse.json(
             { error: 'Failed to fetch products' },
             { status: 500 }
@@ -53,7 +63,7 @@ export async function GET(request) {
 // POST /api/products - Create new product (Admin only)
 export async function POST(request) {
     try {
-        const session = await getServerSession()
+        const session = await getServerSession(authOptions)
 
         if (!session || session.user.role !== 'ADMIN') {
             return NextResponse.json(
@@ -63,7 +73,29 @@ export async function POST(request) {
         }
 
         const body = await request.json()
-        const { name, description, price, image, categoryId, stock, isFeatured } = body
+        const { name, description, price, image, categoryId, stock, unitType, featured, addedDate, discountPrice, discountPercentage } = body
+
+        // Validate required fields
+        if (!name || !name.trim()) {
+            return NextResponse.json(
+                { error: 'Product name is required' },
+                { status: 400 }
+            )
+        }
+
+        if (!price || parseFloat(price) <= 0) {
+            return NextResponse.json(
+                { error: 'Valid price is required' },
+                { status: 400 }
+            )
+        }
+
+        if (!categoryId || categoryId.trim() === '') {
+            return NextResponse.json(
+                { error: 'Category is required' },
+                { status: 400 }
+            )
+        }
 
         const product = await prisma.product.create({
             data: {
@@ -73,15 +105,28 @@ export async function POST(request) {
                 image,
                 categoryId,
                 stock: parseInt(stock) || 0,
-                isFeatured: isFeatured || false
+                unitType: unitType || "piece",
+                featured: featured === 'none' ? null : featured,
+                addedDate: addedDate ? new Date(addedDate) : new Date(),
+                discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+                discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null
             },
             include: {
                 category: true
             }
         })
 
-        return NextResponse.json(product, { status: 201 })
+        // Convert Decimal objects to plain numbers
+        const serializedProduct = {
+            ...product,
+            price: product.price ? parseFloat(product.price.toString()) : 0,
+            discountPrice: product.discountPrice ? parseFloat(product.discountPrice.toString()) : null,
+            discountPercentage: product.discountPercentage ? parseFloat(product.discountPercentage.toString()) : null
+        }
+
+        return NextResponse.json(serializedProduct, { status: 201 })
     } catch (error) {
+        console.error('Error creating product:', error)
         return NextResponse.json(
             { error: 'Failed to create product' },
             { status: 500 }

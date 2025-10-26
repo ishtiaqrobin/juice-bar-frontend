@@ -213,7 +213,7 @@ export default function ProfilePage() {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="max-w-[250px]"
+              className="max-w-[195px]"
             />
           </div>
 

@@ -2,7 +2,7 @@ import ProductForm from '@/components/admin/ProductForm'
 
 export default function NewProductPage() {
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px- py-">
             <ProductForm />
         </div>
     )
