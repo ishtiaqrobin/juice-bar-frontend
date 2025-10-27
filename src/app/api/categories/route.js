@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 
 // GET /api/categories - Get all categories
 export async function GET() {
@@ -39,7 +40,7 @@ export async function GET() {
 // POST /api/categories - Create new category (Admin only)
 export async function POST(request) {
     try {
-        const session = await getServerSession()
+        const session = await getServerSession(authOptions)
 
         if (!session || session.user.role !== 'ADMIN') {
             return NextResponse.json(

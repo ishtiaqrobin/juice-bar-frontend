@@ -65,6 +65,66 @@ async function main() {
 
     console.log('✅ Categories created:', categories.length)
 
+    // Create featured options
+    const featuredOptions = await Promise.all([
+        prisma.featuredOption.upsert({
+            where: { name: 'New' },
+            update: {},
+            create: {
+                name: 'New',
+                description: 'Newly added products',
+                isActive: true,
+            },
+        }),
+        prisma.featuredOption.upsert({
+            where: { name: 'Best Seller' },
+            update: {},
+            create: {
+                name: 'Best Seller',
+                description: 'Most popular products',
+                isActive: true,
+            },
+        }),
+        prisma.featuredOption.upsert({
+            where: { name: 'Special Price' },
+            update: {},
+            create: {
+                name: 'Special Price',
+                description: 'Products with special pricing',
+                isActive: true,
+            },
+        }),
+        prisma.featuredOption.upsert({
+            where: { name: 'Seasonal Offers' },
+            update: {},
+            create: {
+                name: 'Seasonal Offers',
+                description: 'Seasonal promotional products',
+                isActive: true,
+            },
+        }),
+        prisma.featuredOption.upsert({
+            where: { name: 'Summer Special' },
+            update: {},
+            create: {
+                name: 'Summer Special',
+                description: 'Summer season special products',
+                isActive: true,
+            },
+        }),
+        prisma.featuredOption.upsert({
+            where: { name: 'Winter Warmers' },
+            update: {},
+            create: {
+                name: 'Winter Warmers',
+                description: 'Winter season warm products',
+                isActive: true,
+            },
+        }),
+    ])
+
+    console.log('✅ Featured options created:', featuredOptions.length)
+
     // Create products
     const products = await Promise.all([
         // Fresh Fruits

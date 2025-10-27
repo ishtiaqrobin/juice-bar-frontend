@@ -22,7 +22,7 @@ const navItems = [
   { href: "/rewards", label: "Rewards" },
   { href: "/promotions", label: "Promotions" },
   // { href: "/contact", label: "Contact" },
-  { href: "/admin", label: "Admin" },
+  // { href: "/admin", label: "Admin" },
 ];
 
 export function Navbar() {
@@ -99,9 +99,18 @@ export function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 mt-8">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="w-full cursor-pointer">
-                    Profile
-                  </Link>
+                  {session?.user?.role === "ADMIN" ? (
+                    <Link href="/admin" className="w-full cursor-pointer">
+                      Admin Panel
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/dashboard/profile"
+                      className="w-full cursor-pointer"
+                    >
+                      Profile
+                    </Link>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard" className="w-full cursor-pointer">

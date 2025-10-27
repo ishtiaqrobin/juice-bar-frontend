@@ -518,29 +518,59 @@ export default function MenuPage(): JSX.Element {
               <CardCategory>{category.name}</CardCategory>
               <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {groupedItems[category.id]?.map((item: Product) => (
-                  <Card key={item.id} className="">
+                  <Card
+                    key={item.id}
+                    className={`${item.stock <= 0 ? "opacity-75" : ""}`}
+                  >
                     <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
-                      <Image
-                        src={item.image || "/placeholder-image.jpg"}
-                        alt={item.name}
-                        width={220}
-                        height={220}
-                        className="sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover"
-                      />
+                      <div className="relative">
+                        <Image
+                          src={item.image || "/placeholder-image.jpg"}
+                          alt={item.name}
+                          width={220}
+                          height={220}
+                          className={`sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
+                            item.stock <= 0 ? "grayscale" : ""
+                          }`}
+                        />
+                        {item.stock <= 0 && (
+                          <div className="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center sm:rounded-xl rounded-lg">
+                            <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                              OUT OF STOCK
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       {/* card name, tag and price */}
                       <div>
                         <CardTitle className="text-base mt-2">
                           {item.name}
                         </CardTitle>
                         <div className="mt-2 flex-col items-center justify-between">
-                          {item.isFeatured && (
-                            <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded-sm">
-                              <p className="text-[11px] leading-[14px] font-normal text-white">
-                                Featured!
-                              </p>
-                            </button>
-                          )}
-                          <p className="mt-2 text-[17px] leading-[22px] font-bold text-black">
+                          <div className="flex flex-wrap gap-1">
+                            {item.isFeatured && (
+                              <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded-sm">
+                                <p className="text-[11px] leading-[14px] font-normal text-white">
+                                  Featured!
+                                </p>
+                              </button>
+                            )}
+                            {item.stock <= 0 && (
+                              <span className="bg-red-600 text-white px-2 py-1 rounded text-[11px] font-bold">
+                                Out of Stock
+                              </span>
+                            )}
+                            {item.stock > 0 && item.stock <= 5 && (
+                              <span className="bg-orange-500 text-white px-2 py-1 rounded text-[11px] font-bold">
+                                Low Stock
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            className={`mt-2 text-[17px] leading-[22px] font-bold ${
+                              item.stock <= 0 ? "text-gray-500" : "text-black"
+                            }`}
+                          >
                             ৳{item.price}
                           </p>
                         </div>

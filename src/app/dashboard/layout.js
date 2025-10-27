@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }) {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </header>
-                    <div className="flex-1 p-4">
+                    <div className="flex-1 p-4 md:p-6">
                         {children}
                     </div>
                 </SidebarInset>

@@ -4,18 +4,12 @@ import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import Image from "next/image";
 import IconBack from "@/assets/svg/icon_back.svg";
-import { LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { MobileSideDrawer } from "../site/MobileSideDrawer";
 import MobileFilterDropdown from "./MobileFilterDropdown";
 
 const MobileNavbar = ({ className = "" }) => {
   const pathname = usePathname();
   const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" });
-  };
 
   const getPageTitle = () => {
     switch (pathname) {
@@ -37,8 +31,6 @@ const MobileNavbar = ({ className = "" }) => {
         return "Contact";
       case "/promotions":
         return "Promotions";
-      case "/profile":
-        return "Profile";
       case "/dashboard":
         return "Dashboard";
     }
@@ -65,14 +57,7 @@ const MobileNavbar = ({ className = "" }) => {
       )}
 
       {/* Left side - conditional rendering based on route */}
-      {/* {pathname === "/profile" ? (
-        <button
-          onClick={() => router.back()}
-          className="rounded-full hover:bg-gray-100 flex items-center"
-        >
-          <Image src={IconBack} alt="Back" width={30} height={30} />
-        </button>
-      ) : pathname === "/dashboard" ? (
+      {/* {pathname === "/dashboard" ? (
         <div className="md:hidden ">
           <MobileSideDrawer />
         </div>
@@ -84,16 +69,7 @@ const MobileNavbar = ({ className = "" }) => {
       <h1 className="text-xl leading-6 font-semibold">{getPageTitle()}</h1>
 
       {/* Right side - conditional rendering based on route */}
-      {pathname === "/profile" ? (
-        <div className="relative mobile-filter-dropdown-container">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center justify-center w-[30px] h-[30px] border-[1px] border-primary rounded-full hover:cursor-pointer"
-          >
-            <LogOut className="w-[16px] h-[16px] font-bold text-primary"></LogOut>
-          </button>
-        </div>
-      ) : pathname === "/menu" ? (
+      {pathname === "/menu" ? (
         <div className="relative mobile-filter-dropdown-container">
           <MobileFilterDropdown />
         </div>

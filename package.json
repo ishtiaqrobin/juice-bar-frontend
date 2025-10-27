@@ -2,16 +2,17 @@
   "name": "juice-bar-frontend",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
+    "build": "next build",
+    "start": "node server.js",
+    "build:production": "next build && next export",
     "lint": "eslint",
     "db:seed": "npx prisma db seed",
-    "db:migrate": "npx prisma migrate dev",
+    "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
-    "db:studio": "npx prisma studio"
+    "db:studio": "npx prisma studio",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
     <html lang="en" data-theme="light" className={`bg-background text-foreground ${GeistSans.variable} ${GeistMono.variable}`}>
       <body className={GeistSans.className}>
         <AuthProvider>
-          <main className="min-h-[60vh] pb-20 md:pb-0">
+          <main className="min-h-[60vh] pb-0 md:pb-0">
             {children}
           </main>
           <Toaster />

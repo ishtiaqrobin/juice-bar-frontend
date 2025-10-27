@@ -13,7 +13,7 @@ interface FormData {
   phone: string;
 }
 
-export default function ProfilePage() {
+export default function UserProfileComponent() {
   const { data: session, update, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

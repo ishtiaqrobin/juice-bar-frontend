@@ -77,21 +77,27 @@ const DashboardPage = () => {
               Start your next order or manage your account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="flex flex-col gap-2 pt-4">
             <Link href="/menu">
-              <Button className="w-full justify-start">
+              <Button className="w-full justify-start hover:cursor-pointer">
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Start New Order
               </Button>
             </Link>
             <Link href="/rewards">
-              <Button variant="outline" className="w-full justify-start">
+              <Button
+                variant="outline"
+                className="w-full justify-start hover:cursor-pointer"
+              >
                 <Gift className="mr-2 h-4 w-4" />
                 View Rewards
               </Button>
             </Link>
-            <Link href="/profile">
-              <Button variant="outline" className="w-full justify-start">
+            <Link href="/dashboard/profile">
+              <Button
+                variant="outline"
+                className="w-full justify-start hover:cursor-pointer"
+              >
                 <Star className="mr-2 h-4 w-4" />
                 Update Profile
               </Button>

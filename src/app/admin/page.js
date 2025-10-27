@@ -75,19 +75,19 @@ const AdminPage = () => {
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2 pt-4">
                         <Link href="/admin/products">
-                            <Button variant="outline" className="w-full justify-start">
+                            <Button variant="outline" className="w-full justify-start hover:cursor-pointer">
                                 <Package className="mr-2 h-4 w-4" />
                                 Manage Products
                             </Button>
                         </Link>
                         <Link href="/admin/products/new">
-                            <Button variant="outline" className="w-full justify-start">
+                            <Button variant="outline" className="w-full justify-start hover:cursor-pointer">
                                 <Package className="mr-2 h-4 w-4" />
                                 Add New Product
                             </Button>
                         </Link>
                         <Link href="/admin/users">
-                            <Button variant="outline" className="w-full justify-start">
+                            <Button variant="outline" className="w-full justify-start hover:cursor-pointer">
                                 <Users className="mr-2 h-4 w-4" />
                                 Manage Users
                             </Button>

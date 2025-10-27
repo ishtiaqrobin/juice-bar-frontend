@@ -8,6 +8,7 @@ import IconFJBStripe from '@/assets/svg/icon_fjb_strip.svg'
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react'
+import { toast } from 'sonner';
 
 export default function RegistrationPage() {
     const [useEmail, setUseEmail] = useState(true);
@@ -19,7 +20,6 @@ export default function RegistrationPage() {
         confirmPassword: ''
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const router = useRouter();
@@ -30,13 +30,11 @@ export default function RegistrationPage() {
             ...prev,
             [name]: value
         }));
-        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setError('');
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -56,12 +54,13 @@ export default function RegistrationPage() {
             const data = await response.json();
 
             if (response.ok) {
-                router.push('/login?message=Registration successful! Please login.');
+                toast.success('Registration successful! Please login.');
+                router.push('/login');
             } else {
-                setError(data.error || 'Registration failed');
+                toast.error(data.error || 'Registration failed');
             }
         } catch {
-            setError('Network error. Please try again.');
+            toast.error('Network error. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -84,11 +83,6 @@ export default function RegistrationPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 grid gap-4">
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                            {error}
-                        </div>
-                    )}
 
                     <div className="grid gap-2">
                         <Input

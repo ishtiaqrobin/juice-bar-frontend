@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { signOut } from "next-auth/react";
 
 // Navigation items for admin panel
 const adminNavItems = [
@@ -176,9 +177,10 @@ function AdminSidebarContent() {
         <Separator />
         <div className="px-4 py-2">
           <Button
+            onClick={() => signOut({ callbackUrl: "/" })}
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:cursor-pointer"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out

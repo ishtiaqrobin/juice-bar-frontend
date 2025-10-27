@@ -21,12 +21,30 @@ export default function ProductList() {
     const handleToggleStatus = async (productId, currentStatus) => {
         setUpdating(productId)
         try {
+            // Find the product to get all required data
+            const product = products.find(p => p.id === productId)
+            if (!product) {
+                toast.error('Product not found')
+                return
+            }
+
             const response = await fetch(`/api/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    name: product.name,
+                    description: product.description || '',
+                    price: product.price,
+                    image: product.image || '',
+                    categoryId: product.categoryId,
+                    stock: product.stock || 0,
+                    unitType: product.unitType || 'piece',
+                    featured: product.featured || 'none',
+                    addedDate: product.addedDate,
+                    discountPrice: product.discountPrice || null,
+                    discountPercentage: product.discountPercentage || null,
                     isActive: !currentStatus
                 }),
             })
@@ -35,7 +53,8 @@ export default function ProductList() {
                 toast.success('Product status updated successfully!')
                 mutate() // Refresh the data
             } else {
-                toast.error('Failed to update product status')
+                const errorData = await response.json()
+                toast.error(errorData.error || 'Failed to update product status')
             }
         } catch (error) {
             toast.error('Failed to update product status')
@@ -80,33 +99,40 @@ export default function ProductList() {
         <div className="mx-auto space-y-4">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Products</h2>
-                {/* <Button onClick={() => router.push('/admin/products/new')}>
-                    Add New Product
-                </Button> */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {products.map((product) => (
-                    <Card key={product.id} className="bg-gray-100 border p- flex flex-col hover:shadow-lg transition">
-                        <CardHeader>
+                    <Card key={product.id} className={`bg-gray-100 border p- flex flex-col hover:shadow-lg transition ${product.stock <= 0 ? 'opacity-75 border-red-300 bg-red-50' : ''}`}>
+                        <CardHeader className="p-4">
                             <div className="flex flex-col justify-between items-start">
-                                <Image
-                                    src={product.image || '/placeholder-image.jpg'}
-                                    alt={product.name}
-                                    width={150}
-                                    height={150}
-                                    className="w-full h-40 object-cover rounded"></Image>
+                                <div className="relative">
+                                    <Image
+                                        src={product.image || '/placeholder-image.jpg'}
+                                        alt={product.name}
+                                        width={150}
+                                        height={150}
+                                        className={`w-full h-40 object-cover rounded ${product.stock <= 0 ? 'grayscale' : ''}`}
+                                    />
+                                    {product.stock <= 0 && (
+                                        <div className="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center">
+                                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                                OUT OF STOCK
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                                 <div>
-                                    <CardTitle className="flex items-center gap-2">
+                                    <CardTitle>
                                         <p className='text-base font-semibold'>Name: {product.name}</p>
-                                        {product.featured && (
-                                            <Badge variant="secondary">{product.featured}</Badge>
+                                        Featured: {product.featured && (
+                                            <Badge
+                                                className="bg-primary/20"
+                                                variant="secondary">{product.featured}</Badge>
                                         )}
-                                        <Badge variant={product.isActive ? "default" : "destructive"}>
-                                            {product.isActive ? "Active" : "Inactive"}
-                                        </Badge>
                                     </CardTitle>
-                                    <p className="text-sm text-gray-600">{product.category?.name}</p>
+
+                                    <p className="text-sm text-gray-600">Category: {product.category?.name}</p>
                                     <p className="text-xs text-gray-500">Added: {new Date(product.addedDate).toLocaleDateString()}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -126,7 +152,7 @@ export default function ProductList() {
                                                 <span className="text-lg font-bold">${product.price}</span>
                                             )}
                                         </div>
-                                        <span className="text-sm text-gray-500">Stock: {product.stock} {product.unitType}</span>
+
                                         {product.discountPercentage && !product.discountPrice && (
                                             <span className="text-xs text-blue-600">
                                                 Discount: {product.discountPercentage}% (${((parseFloat(product.price) * (100 - parseFloat(product.discountPercentage))) / 100).toFixed(2)})
@@ -135,12 +161,34 @@ export default function ProductList() {
                                     </div>
                                 </div>
                             </div>
+
+                            <CardTitle className="flex items-center gap-2">
+                                <span className={`text-sm ${product.stock <= 0 ? 'text-red-600 font-semibold' : product.stock <= 5 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
+                                    {product.stock <= 0 ? 'Out of Stock' : `Stock: ${product.stock} ${product.unitType}`}
+                                </span>
+
+                                {/* <Badge variant={product.isActive ? "default" : "destructive"}>
+                                    {product.isActive ? "Active" : "Inactive"}
+                                </Badge> */}
+                                {product.stock <= 0 && (
+                                    <Badge variant="destructive" className="bg-red-600">
+                                        Out of Stock
+                                    </Badge>
+                                )}
+                                {product.stock > 0 && product.stock <= 5 && (
+                                    <Badge variant="secondary" className="bg-orange-500 text-white">
+                                        Low Stock
+                                    </Badge>
+                                )}
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent>
+
+                        <CardContent className="py-4">
                             <div className="flex items-center px-6 justify-between">
                                 <div className="flex items-center space-x-4">
                                     <div className="flex items-center space-x-2">
                                         <Switch
+                                            className="hover:cursor-pointer"
                                             checked={product.isActive}
                                             onCheckedChange={() => handleToggleStatus(product.id, product.isActive)}
                                             disabled={updating === product.id}

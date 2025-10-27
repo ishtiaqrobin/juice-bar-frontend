@@ -18,7 +18,7 @@ import React from "react";
 export function BottomTabBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [showAccountPopup, setShowAccountPopup] = React.useState(false);
 
   const toggleAccountPopup = () => {
@@ -35,12 +35,12 @@ export function BottomTabBar() {
   };
 
   const handleNavigateToProfile = () => {
-    router.push("/profile");
+    router.push("/dashboard");
     setShowAccountPopup(false);
   };
 
   const handleNavigateToDashboard = () => {
-    router.push("/dashboard");
+    router.push("/admin");
     setShowAccountPopup(false);
   };
 
@@ -240,7 +240,7 @@ export function BottomTabBar() {
                       onClick={handleNavigateToProfile}
                       className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"
                     >
-                      Profile
+                      Dashboard
                     </button>
 
                     {session?.user?.role === "ADMIN" ? (
@@ -248,7 +248,7 @@ export function BottomTabBar() {
                         onClick={handleNavigateToDashboard}
                         className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"
                       >
-                        Dashboard
+                        Admin Panel
                       </button>
                     ) : (
                       <button

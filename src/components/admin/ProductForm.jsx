@@ -10,11 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { useCategories } from '@/hooks/useCategories'
+import { useFeaturedOptions } from '@/hooks/useFeaturedOptions'
+import AddCategoryDialog from './AddCategoryDialog'
+import AddFeaturedDialog from './AddFeaturedDialog'
 import { toast } from 'sonner'
 
 export default function ProductForm({ product, onSave }) {
     const router = useRouter()
-    const { categories } = useCategories()
+    const { categories, mutate: mutateCategories } = useCategories()
+    const { featuredOptions, mutate: mutateFeaturedOptions } = useFeaturedOptions()
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -32,6 +36,8 @@ export default function ProductForm({ product, onSave }) {
     const [isLoading, setIsLoading] = useState(false)
     const [calculatedDiscountPrice, setCalculatedDiscountPrice] = useState('')
     const [selectKey, setSelectKey] = useState(0)
+    const [showAddCategory, setShowAddCategory] = useState(false)
+    const [showAddFeatured, setShowAddFeatured] = useState(false)
 
     // Calculate discount price based on percentage
     const calculateDiscountPrice = (price, percentage) => {
@@ -64,6 +70,20 @@ export default function ProductForm({ product, onSave }) {
             setCalculatedDiscountPrice(calculated)
             setFormData(prev => ({ ...prev, discountPrice: calculated }))
         }
+    }
+
+    // Handle category added from dialog
+    const handleCategoryAdded = (newCategory) => {
+        setFormData(prev => ({ ...prev, categoryId: newCategory.id }))
+        mutateCategories()
+        setSelectKey(prev => prev + 1) // Force re-render of select
+    }
+
+    // Handle featured option added from dialog
+    const handleFeaturedAdded = (newFeatured) => {
+        setFormData(prev => ({ ...prev, featured: newFeatured.name }))
+        mutateFeaturedOptions()
+        setSelectKey(prev => prev + 1) // Force re-render of select
     }
 
     useEffect(() => {
@@ -268,9 +288,22 @@ export default function ProductForm({ product, onSave }) {
                                 required
                             />
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="category">Category {""}<span className="text-red-500">*</span></Label>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="category">Category {""}<span className="text-red-500">*</span></Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowAddCategory(true)}
+                                    className="text-xs"
+                                >
+                                    + Add Category
+                                </Button>
+                            </div>
                             <Select
                                 key={`category-${selectKey}`}
                                 value={formData.categoryId}
@@ -289,11 +322,43 @@ export default function ProductForm({ product, onSave }) {
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="featured">Featured Product</Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowAddFeatured(true)}
+                                    className="text-xs"
+                                >
+                                    + Add Featured
+                                </Button>
+                            </div>
+                            <Select
+                                key={`featured-${selectKey}`}
+                                value={formData.featured}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, featured: value }))}
+                            >
+                                <SelectTrigger className="bg-white w-full">
+                                    <SelectValue placeholder="Select featured type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {featuredOptions.map((option) => (
+                                        <SelectItem key={option.id} value={option.name}>
+                                            {option.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="image">Product Image</Label>
+                            <Label htmlFor="image">Product Image <span className="text-red-500">*</span></Label>
                             <Input
                                 id="image"
                                 type="file"
@@ -312,33 +377,12 @@ export default function ProductForm({ product, onSave }) {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="featured">Featured Product</Label>
-                            <Select
-                                key={`featured-${selectKey}`}
-                                value={formData.featured}
-                                onValueChange={(value) => setFormData(prev => ({ ...prev, featured: value }))}
-                            >
-                                <SelectTrigger className="bg-white w-full">
-                                    <SelectValue placeholder="Select featured type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
-                                    <SelectItem value="New">New</SelectItem>
-                                    <SelectItem value="Best Seller">Best Seller</SelectItem>
-                                    <SelectItem value="Special Price">Special Price</SelectItem>
-                                    <SelectItem value="Seasonal Offers">Seasonal Offers</SelectItem>
-                                    <SelectItem value="Summer Special">Summer Special</SelectItem>
-                                    <SelectItem value="Winter Warmers">Winter Warmers</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
                             <Label htmlFor="addedDate">Product Added Date</Label>
                             <Input
                                 id="addedDate"
                                 type="date"
                                 value={formData.addedDate}
+                                className="text-sm"
                                 onChange={(e) => setFormData(prev => ({ ...prev, addedDate: e.target.value }))}
                             />
                         </div>
@@ -373,6 +417,19 @@ export default function ProductForm({ product, onSave }) {
                     </div>
                 </form>
             </CardContent>
+
+            {/* Dialog Components */}
+            <AddCategoryDialog
+                open={showAddCategory}
+                onOpenChange={setShowAddCategory}
+                onCategoryAdded={handleCategoryAdded}
+            />
+
+            <AddFeaturedDialog
+                open={showAddFeatured}
+                onOpenChange={setShowAddFeatured}
+                onFeaturedAdded={handleFeaturedAdded}
+            />
         </Card>
     )
 }

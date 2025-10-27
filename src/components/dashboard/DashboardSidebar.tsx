@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { signOut } from "next-auth/react";
 
 // Navigation items for dashboard
 const dashboardNavItems = [
@@ -37,6 +38,11 @@ const dashboardNavItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Profile",
+    url: "/dashboard/profile",
+    icon: User,
   },
   {
     title: "Orders",
@@ -47,11 +53,6 @@ const dashboardNavItems = [
     title: "Rewards",
     url: "/dashboard/rewards",
     icon: Gift,
-  },
-  {
-    title: "Profile",
-    url: "/dashboard/profile",
-    icon: User,
   },
   {
     title: "Payment",
@@ -170,9 +171,10 @@ function DashboardSidebarContent() {
         <Separator />
         <div className="p-2">
           <Button
+            onClick={() => signOut({ callbackUrl: "/" })}
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:cursor-pointer"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out

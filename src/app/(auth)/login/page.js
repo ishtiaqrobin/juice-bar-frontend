@@ -11,7 +11,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg";
@@ -19,7 +19,8 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const [useEmail, setUseEmail] = useState(true);
@@ -29,8 +30,6 @@ export default function LoginPage() {
         password: "",
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [message, setMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     // const searchParams = useSearchParams();
@@ -48,13 +47,11 @@ export default function LoginPage() {
             ...prev,
             [name]: value,
         }));
-        setError("");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setError("");
 
         try {
             const result = await signIn("credentials", {
@@ -65,18 +62,20 @@ export default function LoginPage() {
             });
 
             if (result?.error) {
-                setError("Invalid credentials");
+                toast.error("Invalid credentials");
             } else if (result?.ok) {
+                toast.success("Login successful!");
                 // Get session to check user role
                 const session = await getSession();
                 if (session?.user?.role === "ADMIN") {
-                    router.push("/admin");
+                    // router.push("/admin");
+                    router.push("/");
                 } else {
                     router.push("/");
                 }
             }
         } catch {
-            setError("Login failed. Please try again.");
+            toast.error("Login failed. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -103,17 +102,6 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 grid gap-4">
-                    {message && (
-                        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                            {message}
-                        </div>
-                    )}
-
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                            {error}
-                        </div>
-                    )}
 
                     <div>
                         {useEmail ? (
