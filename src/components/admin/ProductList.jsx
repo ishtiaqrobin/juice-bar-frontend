@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useProducts } from '@/hooks/useProducts'
+import { useInfiniteProducts } from '@/hooks/useProducts'
+import { useCategories } from '@/hooks/useCategories'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { SpinnerCustom } from '@/components/ui/spinner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -14,9 +16,35 @@ import { toast } from 'sonner'
 
 export default function ProductList() {
     const router = useRouter()
-    const { products, isLoading, mutate } = useProducts()
+    const { categories } = useCategories()
+    const [statusFilter, setStatusFilter] = useState('all')
+    const [categoryFilter, setCategoryFilter] = useState('all')
+    const { products, isLoading, isValidating, hasMore, size, setSize, mutate } = useInfiniteProducts({
+        status: statusFilter,
+        category: categoryFilter === 'all' ? undefined : categoryFilter,
+        limit: 12
+    })
     const [updating, setUpdating] = useState(null)
     const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, productId: null, productName: '' })
+    const loaderRef = useRef(null)
+
+    useEffect(() => {
+        setSize(1)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter, categoryFilter])
+
+    useEffect(() => {
+        if (!loaderRef.current) return
+        const el = loaderRef.current
+        const observer = new IntersectionObserver((entries) => {
+            const first = entries[0]
+            if (first.isIntersecting && hasMore && !isValidating) {
+                setSize(prev => prev + 1)
+            }
+        })
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [hasMore, isValidating, setSize])
 
     const handleToggleStatus = async (productId, currentStatus) => {
         setUpdating(productId)
@@ -89,7 +117,7 @@ export default function ProductList() {
         setDeleteDialog({ isOpen: false, productId: null, productName: '' })
     }
 
-    if (isLoading) {
+    if (isLoading && products.length === 0) {
         return <div className="flex justify-center py-20">
             <SpinnerCustom />
         </div>
@@ -97,8 +125,31 @@ export default function ProductList() {
 
     return (
         <div className="mx-auto space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <h2 className="text-2xl font-bold">Products</h2>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
+                        <SelectTrigger className="bg-white w-full md:w-[180px]">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v)}>
+                        <SelectTrigger className="bg-white w-full md:w-[220px]">
+                            <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories?.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -219,6 +270,11 @@ export default function ProductList() {
                     </Card>
                 ))}
             </div>
+
+            <div ref={loaderRef} className="h-8" />
+            {isValidating && products.length > 0 && (
+                <div className="flex justify-center py-6"><SpinnerCustom /></div>
+            )}
 
             {/* Delete Confirmation AlertDialog */}
             <AlertDialog open={deleteDialog.isOpen} onOpenChange={handleDeleteCancel}>

@@ -200,7 +200,7 @@ export default function ProductForm({ product, onSave }) {
                         />
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                         <Label htmlFor="description">Description</Label>
                         <Textarea
                             rows={4}
@@ -209,7 +209,7 @@ export default function ProductForm({ product, onSave }) {
                             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                             placeholder="Enter product description"
                         />
-                    </div>
+                    </div> */}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
@@ -299,7 +299,7 @@ export default function ProductForm({ product, onSave }) {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setShowAddCategory(true)}
-                                    className="text-xs"
+                                    className="text-xs hover:cursor-pointer"
                                 >
                                     + Add Category
                                 </Button>
@@ -331,7 +331,7 @@ export default function ProductForm({ product, onSave }) {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setShowAddFeatured(true)}
-                                    className="text-xs"
+                                    className="text-xs hover:cursor-pointer"
                                 >
                                     + Add Featured
                                 </Button>

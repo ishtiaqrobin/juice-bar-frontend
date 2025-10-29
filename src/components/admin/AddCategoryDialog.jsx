@@ -96,10 +96,10 @@ export default function AddCategoryDialog({ open, onOpenChange, onCategoryAdded 
                         />
                     </div> */}
                     <AlertDialogFooter>
-                        <Button type="button" variant="outline" onClick={handleClose}>
+                        <Button type="button" variant="outline" className="hover:cursor-pointer" onClick={handleClose}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading} className="hover:cursor-pointer">
                             {isLoading ? 'Adding...' : 'Add Category'}
                         </Button>
                     </AlertDialogFooter>

@@ -9,12 +9,14 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url)
         const category = searchParams.get('category')
         const featured = searchParams.get('featured')
+        const status = searchParams.get('status') // 'active' | 'inactive' | 'all'
         const page = parseInt(searchParams.get('page')) || 1
         const limit = parseInt(searchParams.get('limit')) || 10
         const skip = (page - 1) * limit
 
+        // Default behavior preserved: only active unless status=all or status=inactive
         const where = {
-            isActive: true,
+            ...(status === 'inactive' ? { isActive: false } : status === 'all' ? {} : { isActive: true }),
             ...(category && { categoryId: category }),
             ...(featured === 'true' && { isFeatured: true })
         }

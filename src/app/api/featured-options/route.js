@@ -10,13 +10,17 @@ export async function GET() {
             where: {
                 isActive: true
             },
+            select: {
+                id: true,
+                name: true
+            },
             orderBy: {
                 name: 'asc'
             }
         })
 
         return NextResponse.json(featuredOptions)
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Failed to fetch featured options' },
             { status: 500 }

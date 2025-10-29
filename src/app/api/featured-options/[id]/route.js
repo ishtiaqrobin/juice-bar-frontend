@@ -9,6 +9,10 @@ export async function GET(request, { params }) {
         const featuredOption = await prisma.featuredOption.findUnique({
             where: {
                 id: params.id
+            },
+            select: {
+                id: true,
+                name: true
             }
         })
 
@@ -20,7 +24,7 @@ export async function GET(request, { params }) {
         }
 
         return NextResponse.json(featuredOption)
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Failed to fetch featured option' },
             { status: 500 }
@@ -96,7 +100,7 @@ export async function DELETE(request, { params }) {
         }
 
         // Check if any products are using this featured option
-        const productsUsingOption = await prisma.product.count({
+        await prisma.product.count({
             where: {
                 featured: {
                     not: null
@@ -105,7 +109,7 @@ export async function DELETE(request, { params }) {
         })
 
         // Instead of hard delete, we'll soft delete by setting isActive to false
-        const featuredOption = await prisma.featuredOption.update({
+        await prisma.featuredOption.update({
             where: {
                 id: params.id
             },

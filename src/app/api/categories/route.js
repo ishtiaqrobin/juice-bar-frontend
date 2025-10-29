@@ -10,18 +10,12 @@ export async function GET() {
             where: {
                 isActive: true
             },
-            include: {
-                products: {
-                    where: {
-                        isActive: true
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        price: true,
-                        image: true
-                    }
-                }
+            select: {
+                id: true,
+                name: true,
+                // description: true,
+                // image: true,
+                // isActive: true
             },
             orderBy: {
                 name: 'asc'
@@ -29,7 +23,7 @@ export async function GET() {
         })
 
         return NextResponse.json(categories)
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Failed to fetch categories' },
             { status: 500 }
@@ -61,7 +55,7 @@ export async function POST(request) {
         })
 
         return NextResponse.json(category, { status: 201 })
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: 'Failed to create category' },
             { status: 500 }
