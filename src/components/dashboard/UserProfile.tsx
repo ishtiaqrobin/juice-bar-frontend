@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface FormData {
   name: string;
@@ -17,7 +18,6 @@ export default function UserProfileComponent() {
   const { data: session, update, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -88,6 +88,7 @@ export default function UserProfileComponent() {
       // Create FormData and append file
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("kind", "profile");
 
       try {
         const response = await fetch("/api/upload", {
@@ -98,12 +99,12 @@ export default function UserProfileComponent() {
         if (response.ok) {
           const data = await response.json();
           setProfileImage(data.url);
-          setMessage("Profile image uploaded successfully!");
+          toast.success("Profile image uploaded successfully!");
         } else {
-          setMessage("Failed to upload image. Please try again.");
+          toast.error("Failed to upload image. Please try again.");
         }
       } catch {
-        setMessage("Error uploading image. Please try again.");
+        toast.error("Error uploading image. Please try again.");
       }
     }
   };
@@ -111,7 +112,6 @@ export default function UserProfileComponent() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
 
     try {
       const response = await fetch("/api/user/profile", {
@@ -146,14 +146,14 @@ export default function UserProfileComponent() {
           image: updatedUser.image,
         });
 
-        setMessage("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
 
         // No need to reload the page, session will be updated automatically
       } else {
-        setMessage("Failed to update profile. Please try again.");
+        toast.error("Failed to update profile. Please try again.");
       }
     } catch {
-      setMessage("Error updating profile. Please try again.");
+      toast.error("Error updating profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -178,18 +178,6 @@ export default function UserProfileComponent() {
       </div> */}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {message && (
-          <div
-            className={`p-4 rounded ${
-              message.includes("success")
-                ? "bg-green-50 text-green-700"
-                : "bg-red-50 text-red-700"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-
         <div className="space-y-4">
           {/* Profile Image */}
           <div className="flex flex-col items-center space-y-4">
@@ -264,7 +252,7 @@ export default function UserProfileComponent() {
 
         <Button
           type="submit"
-          className="w-full h-10 bg-primary text-white"
+          className="w-full h-10 bg-primary text-white hover:cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? "Updating..." : "Update Profile"}

@@ -71,6 +71,7 @@ export default function BannersPage() {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('kind', 'banner');
 
         try {
             const response = await fetch('/api/upload', {

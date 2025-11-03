@@ -2,6 +2,45 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
+import { unlink } from 'fs/promises'
+import { join } from 'path'
+
+// Helper to delete product image variants saved by upload route
+async function deleteProductImages(imageUrl) {
+    try {
+        if (!imageUrl || !imageUrl.startsWith('/uploads/')) return
+
+        const withinUploads = imageUrl.replace('/uploads/', '')
+        const baseUploadsPath = join(process.cwd(), 'public', 'uploads')
+        const parts = withinUploads.split('/')
+        const dirParts = parts.slice(0, parts.length - 1)
+        const fileName = parts[parts.length - 1]
+        const dirPath = join(baseUploadsPath, ...dirParts)
+
+        const prefix = fileName
+            .replace(/-\d+x\d+(?:-2x)?\.webp$/i, '')
+            .replace(/-master-\d+x\d+\.webp$/i, '')
+
+        const candidates = [
+            `${prefix}-750x500.webp`,
+            `${prefix}-1500x1000-2x.webp`,
+            `${prefix}-master-1500x1000.webp`,
+            fileName
+        ]
+
+        for (const candidate of candidates) {
+            const candidatePath = join(dirPath, candidate)
+            try {
+                await unlink(candidatePath)
+                console.log(`Deleted product image: ${candidatePath}`)
+            } catch {
+                // ignore missing
+            }
+        }
+    } catch (err) {
+        console.error('Error deleting product images:', err)
+    }
+}
 
 // GET /api/products/[id] - Get single product
 export async function GET(request, { params }) {
@@ -79,6 +118,9 @@ export async function PUT(request, { params }) {
             )
         }
 
+        // Load existing product to handle image replacement
+        const existing = await prisma.product.findUnique({ where: { id } })
+
         // Prepare update data
         const updateData = {
             name,
@@ -104,6 +146,11 @@ export async function PUT(request, { params }) {
                 category: true
             }
         })
+
+        // If image changed and old existed, delete previous variants
+        if (existing?.image && image && existing.image !== image) {
+            await deleteProductImages(existing.image)
+        }
 
         // Convert Decimal objects to plain numbers
         const serializedProduct = {
@@ -136,11 +183,18 @@ export async function DELETE(request, { params }) {
         }
 
         const { id } = await params
+
+        const product = await prisma.product.findUnique({ where: { id } })
+
         await prisma.product.delete({
             where: {
                 id
             }
         })
+
+        if (product?.image) {
+            await deleteProductImages(product.image)
+        }
 
         return NextResponse.json({ message: 'Product deleted successfully' })
     } catch (error) {

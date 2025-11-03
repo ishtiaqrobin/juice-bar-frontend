@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
+import { unlink } from "fs/promises";
+import { join } from "path";
 
 export async function PUT(req: Request) {
   try {
@@ -20,6 +22,9 @@ export async function PUT(req: Request) {
       ? { id: session.user.id }
       : { email: session.user.email! };
 
+    // Fetch existing to handle old image deletion
+    const existing = await prisma.user.findUnique({ where: whereClause });
+
     const updatedUser = await prisma.user.update({
       where: whereClause,
       data: {
@@ -31,6 +36,19 @@ export async function PUT(req: Request) {
     });
 
     console.log("Updated user from database:", updatedUser);
+
+    // Delete previous local profile image if replaced
+    try {
+      if (existing?.image && profileImage && existing.image !== profileImage) {
+        if (existing.image.startsWith("/uploads/")) {
+          const filename = existing.image.replace("/uploads/", "");
+          const filePath = join(process.cwd(), "public", "uploads", filename);
+          await unlink(filePath);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to delete old profile image:", e);
+    }
 
     return NextResponse.json(updatedUser);
   } catch (error) {

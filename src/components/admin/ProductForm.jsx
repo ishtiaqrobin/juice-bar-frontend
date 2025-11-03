@@ -163,6 +163,7 @@ export default function ProductForm({ product, onSave }) {
 
         const formData = new FormData()
         formData.append('file', file)
+        formData.append('kind', 'product')
 
         try {
             const response = await fetch('/api/upload', {
