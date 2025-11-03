@@ -18,9 +18,9 @@ import IconOrder from "@/assets/svg/icon_cart.svg";
 
 const navItems = [
   { href: "/", label: "Home" },
+  { href: "/promotions", label: "Promotions" },
   { href: "/menu", label: "Menu" },
   { href: "/rewards", label: "Rewards" },
-  { href: "/promotions", label: "Promotions" },
   // { href: "/contact", label: "Contact" },
   // { href: "/admin", label: "Admin" },
 ];

@@ -4,15 +4,18 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 
 // GET /api/featured-options - Get all featured options
-export async function GET() {
+export async function GET(request) {
     try {
+        const { searchParams } = new URL(request.url)
+        const includeInactive = searchParams.get('includeInactive') === 'true'
+
         const featuredOptions = await prisma.featuredOption.findMany({
-            where: {
-                isActive: true
-            },
+            where: includeInactive ? {} : { isActive: true },
             select: {
                 id: true,
-                name: true
+                name: true,
+                description: true,
+                isActive: true
             },
             orderBy: {
                 name: 'asc'

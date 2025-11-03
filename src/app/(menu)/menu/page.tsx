@@ -1,4 +1,5 @@
 "use client";
+
 import React, { JSX } from "react";
 import Image from "next/image";
 import {
@@ -19,8 +20,8 @@ import { useProducts } from "@/hooks/useProducts";
 interface Category {
   id: string;
   name: string;
-  description?: string;
-  image?: string;
+  // description?: string;
+  // image?: string;
   isActive: boolean;
   products?: Product[];
 }
@@ -31,10 +32,12 @@ interface Product {
   price: number;
   image?: string;
   categoryId: string;
-  description?: string;
+  // description?: string;
   isActive: boolean;
-  isFeatured: boolean;
+  featured?: string | null;
   stock: number;
+  discountPrice?: number | null;
+  discountPercentage?: number | null;
   category?: Category;
 }
 
@@ -55,7 +58,9 @@ export default function MenuPage(): JSX.Element {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("");
   const [showFilterDropdown, setShowFilterDropdown] =
     React.useState<boolean>(false);
-  const [showOnlyAvailable, setShowOnlyAvailable] =
+  const [appliedShowOnlyAvailable, setAppliedShowOnlyAvailable] =
+    React.useState<boolean>(false);
+  const [tempShowOnlyAvailable, setTempShowOnlyAvailable] =
     React.useState<boolean>(false);
   const [isManualSelection, setIsManualSelection] =
     React.useState<boolean>(false);
@@ -268,15 +273,20 @@ export default function MenuPage(): JSX.Element {
   }, [categories, selectedCategory]);
 
   const toggleFilterDropdown = (): void => {
-    setShowFilterDropdown(!showFilterDropdown);
+    const nextOpen = !showFilterDropdown;
+    if (nextOpen) {
+      setTempShowOnlyAvailable(appliedShowOnlyAvailable);
+    }
+    setShowFilterDropdown(nextOpen);
   };
 
   const handleApplyFilter = (): void => {
-    // Apply filter logic here
+    setAppliedShowOnlyAvailable(tempShowOnlyAvailable);
     setShowFilterDropdown(false);
   };
 
   const handleCancelFilter = (): void => {
+    setTempShowOnlyAvailable(appliedShowOnlyAvailable);
     setShowFilterDropdown(false);
   };
 
@@ -313,12 +323,14 @@ export default function MenuPage(): JSX.Element {
     categories.forEach((category: Category) => {
       grouped[category.id] = products
         .filter((product: Product) => product.categoryId === category.id)
-        .filter((product: Product) => !showOnlyAvailable || product.isActive)
+        .filter(
+          (product: Product) => !appliedShowOnlyAvailable || product.stock > 0
+        )
         .sort((a: Product, b: Product) => a.name.localeCompare(b.name));
     });
 
     return grouped;
-  }, [categories, products, showOnlyAvailable]);
+  }, [categories, products, appliedShowOnlyAvailable]);
 
   // Loading component
   if (categoriesLoading || productsLoading) {
@@ -373,7 +385,7 @@ export default function MenuPage(): JSX.Element {
         </section>
 
         {/* desktop menu */}
-        <div className="mt-4 mb- hidden md:flex items-center justify-between">
+        <div className="mt-4 hidden md:flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-[31px] leading-[37px] font-bold tracking-normal text-stone-900">
               MENU
@@ -397,7 +409,7 @@ export default function MenuPage(): JSX.Element {
 
             {/* Filter Dropdown */}
             {showFilterDropdown && (
-              <div className="absolute right-0 top-10 w-[376px] h-[450px] bg-white rounded-sm shadow-[0_4px_15px_rgba(0,0,0,0.3)] z-50">
+              <div className="absolute right-0 top-10 w-[350px] h-[400px] bg-white rounded-sm shadow-[0_4px_15px_rgba(0,0,0,0.3)] z-50">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-200">
                   <h3 className="text-sm leading-[14px] font-semibold text-black">
@@ -417,8 +429,10 @@ export default function MenuPage(): JSX.Element {
                     <input
                       type="checkbox"
                       id="showOnlyAvailable"
-                      checked={showOnlyAvailable}
-                      onChange={(e) => setShowOnlyAvailable(e.target.checked)}
+                      checked={tempShowOnlyAvailable}
+                      onChange={(e) =>
+                        setTempShowOnlyAvailable(e.target.checked)
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <label
@@ -505,82 +519,114 @@ export default function MenuPage(): JSX.Element {
         </div>
 
         {/* Display products by groups - Dynamic */}
-        {categories
-          .filter((cat: Category) => cat.isActive)
-          .sort((a: Category, b: Category) => a.name.localeCompare(b.name))
-          .map((category: Category) => (
-            <div
-              key={category.id}
-              ref={(el) => {
-                sectionRefs.current[category.id] = el;
-              }}
-            >
-              <CardCategory>{category.name}</CardCategory>
-              <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {groupedItems[category.id]?.map((item: Product) => (
-                  <Card
-                    key={item.id}
-                    className={`${item.stock <= 0 ? "opacity-75" : ""}`}
-                  >
-                    <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
-                      <div className="relative">
-                        <Image
-                          src={item.image || "/placeholder-image.jpg"}
-                          alt={item.name}
-                          width={220}
-                          height={220}
-                          className={`sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
-                            item.stock <= 0 ? "grayscale" : ""
-                          }`}
-                        />
-                        {item.stock <= 0 && (
-                          <div className="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center sm:rounded-xl rounded-lg">
-                            <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
-                              OUT OF STOCK
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {/* card name, tag and price */}
-                      <div>
-                        <CardTitle className="text-base mt-2">
-                          {item.name}
-                        </CardTitle>
-                        <div className="mt-2 flex-col items-center justify-between">
-                          <div className="flex flex-wrap gap-1">
-                            {item.isFeatured && (
-                              <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded-sm">
-                                <p className="text-[11px] leading-[14px] font-normal text-white">
-                                  Featured!
-                                </p>
-                              </button>
-                            )}
-                            {item.stock <= 0 && (
-                              <span className="bg-red-600 text-white px-2 py-1 rounded text-[11px] font-bold">
-                                Out of Stock
-                              </span>
-                            )}
-                            {item.stock > 0 && item.stock <= 5 && (
+        <div className="mb-24 md:mb-0">
+          {categories
+            .filter((cat: Category) => cat.isActive)
+            .sort((a: Category, b: Category) => a.name.localeCompare(b.name))
+            .map((category: Category) => (
+              <div
+                key={category.id}
+                ref={(el) => {
+                  sectionRefs.current[category.id] = el;
+                }}
+              >
+                <CardCategory>{category.name}</CardCategory>
+                <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {groupedItems[category.id]?.map((item: Product) => (
+                    <Card
+                      key={item.id}
+                      className={`${item.stock <= 0 ? "opacity-75" : ""}`}
+                    >
+                      <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
+                        <div className="relative">
+                          <Image
+                            src={item.image || "/placeholder-image.jpg"}
+                            alt={item.name}
+                            width={220}
+                            height={220}
+                            className={`sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
+                              item.stock <= 0 ? "grayscale" : ""
+                            }`}
+                          />
+                          {item.stock <= 0 && (
+                            <Image
+                              src={item.image || "/placeholder-image.jpg"}
+                              alt={item.name}
+                              width={220}
+                              height={220}
+                              className={`absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
+                                item.stock <= 0 ? "grayscale" : ""
+                              }`}
+                            />
+                          )}
+                        </div>
+                        {/* card name, tag and price */}
+                        <div>
+                          <CardTitle className="text-base mt-2">
+                            {item.name}
+                          </CardTitle>
+                          <div className="mt-2 flex-col items-center justify-between">
+                            <div className="flex flex-wrap gap-1">
+                              {item.featured && (
+                                <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded">
+                                  <p className="text-[11px] leading-[14px] font-normal text-white">
+                                    {item.featured}
+                                  </p>
+                                </button>
+                              )}
+                              {item.stock <= 0 && (
+                                <span className="bg-red-600 text-white px-2 py-1 rounded text-[11px] font-semibold">
+                                  Out of Stock
+                                </span>
+                              )}
+                              {/* {item.stock > 0 && item.stock <= 5 && (
                               <span className="bg-orange-500 text-white px-2 py-1 rounded text-[11px] font-bold">
                                 Low Stock
                               </span>
-                            )}
+                            )} */}
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              {item.discountPrice ? (
+                                <>
+                                  <span
+                                    className={`text-[17px] leading-[22px] font-bold ${
+                                      item.stock <= 0
+                                        ? "text-gray-500"
+                                        : "text-red-600"
+                                    }`}
+                                  >
+                                    ৳{item.discountPrice}
+                                  </span>
+                                  <span className="text-sm text-gray-500 line-through">
+                                    ৳{item.price}
+                                  </span>
+                                  {item.discountPercentage && (
+                                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                      -{item.discountPercentage}%
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <span
+                                  className={`text-[17px] leading-[22px] font-bold ${
+                                    item.stock <= 0
+                                      ? "text-gray-500"
+                                      : "text-black"
+                                  }`}
+                                >
+                                  ৳{item.price}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <p
-                            className={`mt-2 text-[17px] leading-[22px] font-bold ${
-                              item.stock <= 0 ? "text-gray-500" : "text-black"
-                            }`}
-                          >
-                            ৳{item.price}
-                          </p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )) || []}
+                      </CardContent>
+                    </Card>
+                  )) || []}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+        </div>
       </div>
     </div>
   );

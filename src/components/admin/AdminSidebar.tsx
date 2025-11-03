@@ -14,6 +14,9 @@ import {
   FileText,
   LogOut,
   Plus,
+  List,
+  Tag,
+  Image,
 } from "lucide-react";
 
 import {
@@ -41,6 +44,11 @@ const adminNavItems = [
     icon: Home,
   },
   {
+    title: "Banners",
+    url: "/admin/banners",
+    icon: Image,
+  },
+  {
     title: "Products",
     url: "/admin/products",
     icon: Package,
@@ -49,6 +57,16 @@ const adminNavItems = [
     title: "Add Product",
     url: "/admin/products/new",
     icon: Plus,
+  },
+  {
+    title: "Categories",
+    url: "/admin/categories",
+    icon: Tag,
+  },
+  {
+    title: "Featured",
+    url: "/admin/featured",
+    icon: List,
   },
   {
     title: "Users",

@@ -136,3 +136,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide scrollbars globally across browsers while keeping scroll functional */
+* {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and legacy Edge */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+  /* Chrome, Safari, Opera */
+}

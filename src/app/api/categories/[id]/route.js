@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 
-// GET /api/featured-options/[id] - Get single featured option
+// GET /api/categories/[id] - Get single category
 export async function GET(request, { params }) {
     try {
         const { id } = await params
-        const featuredOption = await prisma.featuredOption.findUnique({
+        const category = await prisma.category.findUnique({
             where: {
                 id: id
             },
@@ -15,27 +15,28 @@ export async function GET(request, { params }) {
                 id: true,
                 name: true,
                 description: true,
+                image: true,
                 isActive: true
             }
         })
 
-        if (!featuredOption) {
+        if (!category) {
             return NextResponse.json(
-                { error: 'Featured option not found' },
+                { error: 'Category not found' },
                 { status: 404 }
             )
         }
 
-        return NextResponse.json(featuredOption)
+        return NextResponse.json(category)
     } catch {
         return NextResponse.json(
-            { error: 'Failed to fetch featured option' },
+            { error: 'Failed to fetch category' },
             { status: 500 }
         )
     }
 }
 
-// PUT /api/featured-options/[id] - Update featured option (Admin only)
+// PUT /api/categories/[id] - Update category (Admin only)
 export async function PUT(request, { params }) {
     try {
         const session = await getServerSession(authOptions)
@@ -49,49 +50,50 @@ export async function PUT(request, { params }) {
 
         const { id } = await params
         const body = await request.json()
-        const { name, description, isActive } = body
+        const { name, description, image, isActive } = body
 
         // Validate required fields
         if (!name || !name.trim()) {
             return NextResponse.json(
-                { error: 'Featured option name is required' },
+                { error: 'Category name is required' },
                 { status: 400 }
             )
         }
 
-        const featuredOption = await prisma.featuredOption.update({
+        const category = await prisma.category.update({
             where: {
                 id: id
             },
             data: {
                 name: name.trim(),
                 description: description?.trim() || null,
+                image: image || null,
                 isActive: isActive !== undefined ? isActive : true
             }
         })
 
-        return NextResponse.json(featuredOption)
+        return NextResponse.json(category)
     } catch (error) {
         if (error.code === 'P2025') {
             return NextResponse.json(
-                { error: 'Featured option not found' },
+                { error: 'Category not found' },
                 { status: 404 }
             )
         }
         if (error.code === 'P2002') {
             return NextResponse.json(
-                { error: 'Featured option with this name already exists' },
+                { error: 'Category with this name already exists' },
                 { status: 400 }
             )
         }
         return NextResponse.json(
-            { error: 'Failed to update featured option' },
+            { error: 'Failed to update category' },
             { status: 500 }
         )
     }
 }
 
-// DELETE /api/featured-options/[id] - Delete featured option (Admin only)
+// DELETE /api/categories/[id] - Delete category (Admin only)
 export async function DELETE(request, { params }) {
     try {
         const session = await getServerSession(authOptions)
@@ -105,51 +107,39 @@ export async function DELETE(request, { params }) {
 
         const { id } = await params
 
-        // Get the featured option name to check products
-        const featuredOption = await prisma.featuredOption.findUnique({
-            where: { id: id },
-            select: { name: true }
-        })
-
-        if (!featuredOption) {
-            return NextResponse.json(
-                { error: 'Featured option not found' },
-                { status: 404 }
-            )
-        }
-
-        // Check if any products are using this specific featured option
+        // Check if any products are using this category
         const productCount = await prisma.product.count({
             where: {
-                featured: featuredOption.name
+                categoryId: id
             }
         })
 
         if (productCount > 0) {
             return NextResponse.json(
-                { error: `Cannot delete featured option. ${productCount} products are using this featured option.` },
+                { error: `Cannot delete category. ${productCount} products are using this category.` },
                 { status: 400 }
             )
         }
 
-        // Hard delete the featured option
-        await prisma.featuredOption.delete({
+        // Hard delete the category
+        await prisma.category.delete({
             where: {
                 id: id
             }
         })
 
-        return NextResponse.json({ message: 'Featured option deleted successfully' })
+        return NextResponse.json({ message: 'Category deleted successfully' })
     } catch (error) {
         if (error.code === 'P2025') {
             return NextResponse.json(
-                { error: 'Featured option not found' },
+                { error: 'Category not found' },
                 { status: 404 }
             )
         }
         return NextResponse.json(
-            { error: 'Failed to delete featured option' },
+            { error: 'Failed to delete category' },
             { status: 500 }
         )
     }
 }
+

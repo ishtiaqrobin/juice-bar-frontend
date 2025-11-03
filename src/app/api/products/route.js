@@ -11,14 +11,14 @@ export async function GET(request) {
         const featured = searchParams.get('featured')
         const status = searchParams.get('status') // 'active' | 'inactive' | 'all'
         const page = parseInt(searchParams.get('page')) || 1
-        const limit = parseInt(searchParams.get('limit')) || 10
+        const limit = parseInt(searchParams.get('limit')) || 1000
         const skip = (page - 1) * limit
 
         // Default behavior preserved: only active unless status=all or status=inactive
         const where = {
             ...(status === 'inactive' ? { isActive: false } : status === 'all' ? {} : { isActive: true }),
             ...(category && { categoryId: category }),
-            ...(featured === 'true' && { isFeatured: true })
+            ...(featured === 'true' && { featured: { not: null } })
         }
 
         const [products, total] = await Promise.all([

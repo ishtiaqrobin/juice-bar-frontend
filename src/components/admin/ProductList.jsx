@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardImage, CardPrice, CardStock, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useInfiniteProducts } from '@/hooks/useProducts'
 import { useCategories } from '@/hooks/useCategories'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -13,6 +14,7 @@ import { SpinnerCustom } from '@/components/ui/spinner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { SquarePen, Trash2 } from 'lucide-react'
 
 export default function ProductList() {
     const router = useRouter()
@@ -27,6 +29,37 @@ export default function ProductList() {
     const [updating, setUpdating] = useState(null)
     const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, productId: null, productName: '' })
     const loaderRef = useRef(null)
+
+    function ProductImage({ src, alt, className }) {
+        const [loaded, setLoaded] = useState(false)
+        const imgRef = useRef(null)
+
+        useEffect(() => {
+            const imgEl = imgRef.current
+            if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+                setLoaded(true)
+            }
+        }, [])
+
+        return (
+            <div className="relative">
+                {!loaded && (
+                    <Skeleton className="absolute inset-0 w-full h-56 rounded-lg" />
+                )}
+                <Image
+                    ref={imgRef}
+                    src={src}
+                    alt={alt}
+                    width={150}
+                    height={150}
+                    loading="lazy"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    onLoadingComplete={() => setLoaded(true)}
+                    className={`${className} transition-opacity duration-300`}
+                />
+            </div>
+        )
+    }
 
     useEffect(() => {
         setSize(1)
@@ -117,12 +150,6 @@ export default function ProductList() {
         setDeleteDialog({ isOpen: false, productId: null, productName: '' })
     }
 
-    if (isLoading && products.length === 0) {
-        return <div className="flex justify-center py-20">
-            <SpinnerCustom />
-        </div>
-    }
-
     return (
         <div className="mx-auto space-y-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -152,47 +179,70 @@ export default function ProductList() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map((product) => (
-                    <Card key={product.id} className={`bg-gray-100 border p- flex flex-col hover:shadow-lg transition ${product.stock <= 0 ? 'opacity-75 border-red-300 bg-red-50' : ''}`}>
-                        <CardHeader className="p-4">
-                            <div className="flex flex-col justify-between items-start">
+            {/* Product List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {(isLoading && products.length === 0) ? (
+                    Array.from({ length: 12 }).map((_, idx) => (
+                        <div key={idx} className="bg-[#FAFAF9] border p- rounded-xl flex flex-col h-full">
+                            <div className="p-3 md:p-4 space-y-3">
                                 <div className="relative">
-                                    <Image
-                                        src={product.image || '/placeholder-image.jpg'}
-                                        alt={product.name}
-                                        width={150}
-                                        height={150}
-                                        className={`w-full h-40 object-cover rounded ${product.stock <= 0 ? 'grayscale' : ''}`}
-                                    />
-                                    {product.stock <= 0 && (
-                                        <div className="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center">
-                                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                                OUT OF STOCK
-                                            </span>
-                                        </div>
-                                    )}
+                                    <Skeleton className="w-full h-56 rounded-lg" />
                                 </div>
-                                <div>
-                                    <CardTitle>
-                                        <p className='text-base font-semibold'>Name: {product.name}</p>
-                                        Featured: {product.featured && (
-                                            <Badge
-                                                className="bg-primary/20"
-                                                variant="secondary">{product.featured}</Badge>
-                                        )}
-                                    </CardTitle>
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-6 w-24" />
+                                <div className="space-y-3">
+                                    <Skeleton className="h-4 w-40" />
+                                    <Skeleton className="h-4 w-36" />
+                                </div>
+                                <Skeleton className="h-5 w-28" />
+                            </div>
+                            <div className="pb-3 md:pb-4 px-3 md:px-4 mt-auto">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <Skeleton className="h-6 w-20" />
+                                    </div>
+                                    <div className="flex space-x-2">
+                                        <Skeleton className="h-8 w-9 rounded-md" />
+                                        <Skeleton className="h-8 w-9 rounded-md" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : products.map((product) => (
+                    <Card key={product.id} className={`bg-[#FAFAF9] border p- flex flex-col h-full hover:shadow-lg transition ${product.stock <= 0 ? 'opacity-75 border-red-400 bg-red-100/90' : ''}`}>
+                        <CardHeader className="p-3 md:p-4">
+                            <CardImage className="relative">
+                                <ProductImage
+                                    src={product.image || '/placeholder-image.jpg'}
+                                    alt={product.name}
+                                    className={`w-full h-56 object-cover rounded-lg ${product.stock <= 0 ? 'grayscale' : ''}`}
+                                />
+                                {product.stock <= 0 && (
+                                    <div className="absolute inset-0 rounded-lg bg-red-500/20" />
+                                )}
+                            </CardImage>
 
-                                    <p className="text-sm text-gray-600">Category: {product.category?.name}</p>
-                                    <p className="text-xs text-gray-500">Added: {new Date(product.addedDate).toLocaleDateString()}</p>
-                                </div>
+                            <CardTitle>
+                                <p className='text-base text-black font-semibold'>{product.name}</p>
+                            </CardTitle>
+
+                            <div>
+                                {product.featured && (
+                                    <Badge
+                                        className="bg-[#A7A7A7] text-white rounded"
+                                        variant="secondary">{product.featured}</Badge>
+                                )}
+                            </div>
+
+                            <CardPrice>
                                 <div className="flex items-center gap-2">
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
                                             {product.discountPrice ? (
                                                 <>
-                                                    <span className="text-lg font-bold text-red-600">${product.discountPrice}</span>
-                                                    <span className="text-sm text-gray-500 line-through">${product.price}</span>
+                                                    <span className="text-lg font-bold text-red-600">৳{product.discountPrice}</span>
+                                                    <span className="text-sm text-gray-500 line-through">৳{product.price}</span>
                                                     {product.discountPercentage && (
                                                         <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
                                                             -{product.discountPercentage}%
@@ -200,7 +250,7 @@ export default function ProductList() {
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-lg font-bold">${product.price}</span>
+                                                <span className="text-lg text-black font-bold">৳{product.price}</span>
                                             )}
                                         </div>
 
@@ -211,31 +261,38 @@ export default function ProductList() {
                                         )}
                                     </div>
                                 </div>
-                            </div>
+                            </CardPrice>
 
-                            <CardTitle className="flex items-center gap-2">
-                                <span className={`text-sm ${product.stock <= 0 ? 'text-red-600 font-semibold' : product.stock <= 5 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
-                                    {product.stock <= 0 ? 'Out of Stock' : `Stock: ${product.stock} ${product.unitType}`}
+                            <CardDescription className="text-card-foreground">
+                                <p>
+                                    In Category: {product.category?.name}
+                                </p>
+
+                                <p>
+                                    Added on: {new Date(product.addedDate).toLocaleDateString()}
+                                </p>
+                            </CardDescription>
+
+                            <CardStock className="flex items-center gap-">
+                                <span className={`text-sm font-semibold capitalize ${product.stock <= 0 ? 'text-red-600 ' : product.stock <= 5 ? 'text-orange-600 mr-2' : 'text-card-foreground'}`}>
+                                    {product.stock <= 0 ? '' : `Stock: ${product.stock} ${product.unitType}`}
                                 </span>
 
-                                {/* <Badge variant={product.isActive ? "default" : "destructive"}>
-                                    {product.isActive ? "Active" : "Inactive"}
-                                </Badge> */}
                                 {product.stock <= 0 && (
-                                    <Badge variant="destructive" className="bg-red-600">
+                                    <Badge variant="destructive" className="bg-red-600 text-[11px] font-semibold">
                                         Out of Stock
                                     </Badge>
                                 )}
                                 {product.stock > 0 && product.stock <= 5 && (
-                                    <Badge variant="secondary" className="bg-orange-500 text-white">
+                                    <Badge variant="secondary" className="bg-orange-600 text-white text-[11px] font-semibold">
                                         Low Stock
                                     </Badge>
                                 )}
-                            </CardTitle>
+                            </CardStock>
                         </CardHeader>
 
-                        <CardContent className="py-4">
-                            <div className="flex items-center px-6 justify-between">
+                        <CardFooter className="pb-3 md:pb-4 px-3 md:px-4 mt-auto">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                     <div className="flex items-center space-x-2">
                                         <Switch
@@ -254,7 +311,7 @@ export default function ProductList() {
                                         size="sm"
                                         onClick={() => router.push(`/admin/products/${product.id}`)}
                                     >
-                                        Edit
+                                        <SquarePen size={14} className="" />
                                     </Button>
                                     <Button
                                         className="hover:cursor-pointer"
@@ -262,11 +319,11 @@ export default function ProductList() {
                                         size="sm"
                                         onClick={() => handleDeleteClick(product.id, product.name)}
                                     >
-                                        Delete
+                                        <Trash2 size={14} className="" />
                                     </Button>
                                 </div>
                             </div>
-                        </CardContent>
+                        </CardFooter>
                     </Card>
                 ))}
             </div>

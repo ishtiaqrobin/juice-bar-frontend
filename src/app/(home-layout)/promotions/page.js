@@ -2,6 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { BreadcrumbWithCustomSeparator } from "@/components/site/BreadcrumbWithCustomSeparator";
+import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg";
 
 const promos = [
   {
@@ -20,11 +22,23 @@ const promos = [
 
 export default function PromotionsPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-        Promotions
-      </h1>
-      <p className="mt-2 text-stone-600">Hot deals you don’t want to miss.</p>
+    <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
+      <div className="hidden md:block mb-3">
+        <Image src={IconFJBStripe} alt="Logo" width={40} height={16}></Image>
+      </div>
+
+      <div className="hidden md:block">
+        <BreadcrumbWithCustomSeparator />
+      </div>
+
+      <div className="mt-4">
+        <h1 className="text-3xl md:text-[31px] leading-[37px] font-bold tracking-normal text-stone-900">
+          Promotions
+        </h1>
+        <p className="mt-3 text-stone-600">
+          Hot deals you don’t want to miss.
+        </p>
+      </div>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         {promos.map((promo) => (
@@ -41,7 +55,7 @@ export default function PromotionsPage() {
             <CardContent className="p-4">
               <CardTitle>{promo.title}</CardTitle>
               <p className="mt-2 text-sm text-stone-600">{promo.desc}</p>
-              <Button className="mt-4 bg-red-700 hover:bg-red-800 text-white">
+              <Button className="mt-4 bg-primary hover:bg-primary/90 text-white hover:cursor-pointer">
                 Order Now
               </Button>
             </CardContent>
