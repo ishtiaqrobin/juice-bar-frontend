@@ -22,7 +22,7 @@ const ForgotPassword = () => {
                     <p className="mt-2 text-stone-600">Just let us know your email address and we will email <br className='hidden md:block' /> you a password reset link.</p>
                 </div>
 
-                <form className="mt-8 grid gap-4">
+                <form className="mt-8 grid  gap-4">
                     <div className="grid gap-2">
                         <Input id="email" type="email" placeholder="Email" />
                     </div>
