@@ -171,12 +171,22 @@ export const api = {
 
   // User endpoints
   users: {
-    getAll: () => apiClient.get("/users"),
+    getAll: (params?: {
+      search?: string;
+      role?: string;
+      page?: number;
+      limit?: number;
+    }) => apiClient.get("/users", { params }),
 
     getById: (id: string) => apiClient.get(`/users/${id}`),
 
     updateProfile: (data: { name?: string; image?: string; phone?: string }) =>
       apiClient.put("/users/profile", data),
+
+    update: (
+      id: string,
+      data: { name?: string; phone?: string; role?: string }
+    ) => apiClient.put(`/users/${id}`, data),
 
     updateRole: (id: string, role: "USER" | "ADMIN") =>
       apiClient.put(`/users/${id}/role`, { role }),

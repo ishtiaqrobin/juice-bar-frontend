@@ -50,9 +50,75 @@ const CardStock = ({ children, className = "" }) => (
   <div className={className}>{children}</div>
 );
 
-const ProductImage = ({ src, alt, className }) => (
-  <Image src={src} alt={alt} width={300} height={300} className={className} />
-);
+const ProductImage = ({ src, alt, className }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [imageQuality, setImageQuality] = useState(75);
+
+  useEffect(() => {
+    // Network-aware quality adjustment for mobile users
+    if (typeof window !== "undefined" && "connection" in navigator) {
+      const connection =
+        navigator.connection ||
+        navigator.mozConnection ||
+        navigator.webkitConnection;
+      if (connection) {
+        const effectiveType = connection.effectiveType;
+        if (effectiveType === "4g") {
+          setImageQuality(100);
+        } else if (effectiveType === "3g") {
+          setImageQuality(80);
+        } else if (effectiveType === "2g" || effectiveType === "slow-2g") {
+          setImageQuality(60);
+        }
+      }
+    }
+  }, []);
+
+  // Generate blur placeholder (tiny base64 image)
+  const shimmer = (w, h) => `
+    <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <linearGradient id="g">
+          <stop stop-color="#f0f0f0" offset="20%" />
+          <stop stop-color="#e0e0e0" offset="50%" />
+          <stop stop-color="#f0f0f0" offset="70%" />
+        </linearGradient>
+      </defs>
+      <rect width="${w}" height="${h}" fill="#f0f0f0" />
+      <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
+      <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
+    </svg>
+  `;
+
+  const toBase64 = (str) =>
+    typeof window === "undefined"
+      ? Buffer.from(str).toString("base64")
+      : window.btoa(str);
+
+  return (
+    <div className="relative overflow-hidden rounded-lg">
+      {isLoading && (
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-lg" />
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        width={300}
+        height={300}
+        className={`${className} transition-all duration-500 ease-in-out ${
+          isLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        }`}
+        onLoadingComplete={() => setIsLoading(false)}
+        loading="lazy"
+        placeholder="blur"
+        blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(300, 300))}`}
+        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        quality={imageQuality}
+        priority={false}
+      />
+    </div>
+  );
+};
 
 const SpinnerCustom = () => (
   <div className="flex items-center justify-center">

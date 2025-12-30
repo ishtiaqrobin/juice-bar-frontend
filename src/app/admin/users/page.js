@@ -20,13 +20,9 @@ export default function UsersPage() {
     const [roleFilter, setRoleFilter] = React.useState('ALL');
     const [query, setQuery] = React.useState('');
     const [page, setPage] = React.useState(1);
-    const [limit] = React.useState(20);
+    const [limit] = React.useState(10);
 
-    React.useEffect(() => {
-        fetchUsers();
-    }, [roleFilter, query, page]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = React.useCallback(async () => {
         try {
             setIsLoading(true);
             const params = { page, limit };
@@ -42,7 +38,11 @@ export default function UsersPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [roleFilter, query, page, limit]);
+
+    React.useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const [editingId, setEditingId] = React.useState(null);
     const [editOpen, setEditOpen] = React.useState(false);
@@ -208,10 +208,87 @@ export default function UsersPage() {
                 </Table>
 
                 <div className="flex items-center justify-between p-2.5 border-t rounded-x-md rounded-b-md bg-white">
-                    <div className="text-sm text-gray-600">Page {pagination.page} of {pagination.totalPages}</div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" className="hover:cursor-pointer" disabled={pagination.page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Previous</Button>
-                        <Button variant="outline" className="hover:cursor-pointer" disabled={pagination.page >= pagination.totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+                    <div className="text-sm text-gray-600">
+                        Showing {users.length > 0 ? ((pagination.page - 1) * limit + 1) : 0} to {Math.min(pagination.page * limit, pagination.total)} of {pagination.total} users
+                    </div>
+                    <div className="flex gap-1">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="hover:cursor-pointer"
+                            disabled={pagination.page <= 1}
+                            onClick={() => setPage(pagination.page - 1)}
+                        >
+                            Previous
+                        </Button>
+
+                        {/* Page Numbers */}
+                        {(() => {
+                            const pages = [];
+                            const totalPages = pagination.totalPages;
+                            const currentPage = pagination.page;
+
+                            if (totalPages <= 7) {
+                                // Show all pages if 7 or less
+                                for (let i = 1; i <= totalPages; i++) {
+                                    pages.push(i);
+                                }
+                            } else {
+                                // Always show first page
+                                pages.push(1);
+
+                                if (currentPage > 3) {
+                                    pages.push('...');
+                                }
+
+                                // Show pages around current page
+                                const start = Math.max(2, currentPage - 1);
+                                const end = Math.min(totalPages - 1, currentPage + 1);
+
+                                for (let i = start; i <= end; i++) {
+                                    pages.push(i);
+                                }
+
+                                if (currentPage < totalPages - 2) {
+                                    pages.push('...');
+                                }
+
+                                // Always show last page
+                                pages.push(totalPages);
+                            }
+
+                            return pages.map((pageNum, idx) => {
+                                if (pageNum === '...') {
+                                    return (
+                                        <span key={`ellipsis-${idx}`} className="px-3 py-1.5 text-gray-500">
+                                            ...
+                                        </span>
+                                    );
+                                }
+
+                                return (
+                                    <Button
+                                        key={pageNum}
+                                        size="sm"
+                                        variant={currentPage === pageNum ? "default" : "outline"}
+                                        className="hover:cursor-pointer min-w-[36px]"
+                                        onClick={() => setPage(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </Button>
+                                );
+                            });
+                        })()}
+
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="hover:cursor-pointer"
+                            disabled={pagination.page >= pagination.totalPages}
+                            onClick={() => setPage(pagination.page + 1)}
+                        >
+                            Next
+                        </Button>
                     </div>
                 </div>
             </div>

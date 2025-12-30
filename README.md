@@ -81,4 +81,5 @@ If you run into build or deployment issues:
 4. Refer to the troubleshooting notes in `DEPLOY_INSTRUCTIONS.md` and `QUICK_DEPLOY.md`.
 
 Happy deploying! 🚀
+
 # juice-bar-frontend

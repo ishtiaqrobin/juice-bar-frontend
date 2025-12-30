@@ -42,6 +42,90 @@ interface Product {
   category?: Category;
 }
 
+// Optimized Product Image Component for mobile users
+const ProductImage = ({
+  src,
+  alt,
+  className,
+  width = 220,
+  height = 220
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  width?: number;
+  height?: number;
+}) => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [imageQuality, setImageQuality] = React.useState(75);
+
+  React.useEffect(() => {
+    // Network-aware quality adjustment for mobile users
+    if (typeof window !== 'undefined' && 'connection' in navigator) {
+      const nav = navigator as Navigator & {
+        connection?: { effectiveType?: string };
+        mozConnection?: { effectiveType?: string };
+        webkitConnection?: { effectiveType?: string };
+      };
+      const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+      if (connection) {
+        const effectiveType = connection.effectiveType;
+        if (effectiveType === '4g') {
+          setImageQuality(100);
+        } else if (effectiveType === '3g') {
+          setImageQuality(80);
+        } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
+          setImageQuality(60);
+        }
+      }
+    }
+  }, []);
+
+  // Generate blur placeholder (tiny base64 image)
+  const shimmer = (w: number, h: number) => `
+    <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <linearGradient id="g">
+          <stop stop-color="#f0f0f0" offset="20%" />
+          <stop stop-color="#e0e0e0" offset="50%" />
+          <stop stop-color="#f0f0f0" offset="70%" />
+        </linearGradient>
+      </defs>
+      <rect width="${w}" height="${h}" fill="#f0f0f0" />
+      <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
+      <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
+    </svg>
+  `;
+
+  const toBase64 = (str: string) =>
+    typeof window === 'undefined'
+      ? Buffer.from(str).toString('base64')
+      : window.btoa(str);
+
+  return (
+    <div className="relative overflow-hidden rounded-lg sm:rounded-xl">
+      {isLoading && (
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-lg sm:rounded-xl" />
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={`${className} transition-all duration-500 ease-in-out ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        onLoadingComplete={() => setIsLoading(false)}
+        loading="lazy"
+        placeholder="blur"
+        blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(width, height))}`}
+        sizes="(max-width: 640px) 100px, (max-width: 768px) 150px, (max-width: 1024px) 180px, 220px"
+        quality={imageQuality}
+        priority={false}
+      />
+    </div>
+  );
+};
+
 export default function MenuPage(): JSX.Element {
   // State for data
   const [categories, setCategories] = React.useState<Category[]>([]);
@@ -605,7 +689,7 @@ export default function MenuPage(): JSX.Element {
                       >
                         <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
                           <div className="relative">
-                            <Image
+                            <ProductImage
                               src={item.image || "/placeholder-image.jpg"}
                               alt={item.name}
                               width={220}
@@ -614,7 +698,7 @@ export default function MenuPage(): JSX.Element {
                                 }`}
                             />
                             {item.stock <= 0 && (
-                              <Image
+                              <ProductImage
                                 src={item.image || "/placeholder-image.jpg"}
                                 alt={item.name}
                                 width={220}

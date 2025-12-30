@@ -56,11 +56,11 @@ export default function ProductForm({ product }) {
 
   useEffect(() => {
     if (product && dataLoaded) {
-      console.log("Product loaded:", product);
-      console.log("CategoryId:", product.categoryId);
-      console.log("Featured:", product.featured);
-      console.log("Categories available:", categories);
-      console.log("Featured options available:", featuredOptions);
+      // console.log("Product loaded:", product);
+      // console.log("CategoryId:", product.categoryId);
+      // console.log("Featured:", product.featured);
+      // console.log("Categories available:", categories);
+      // console.log("Featured options available:", featuredOptions);
 
       setFormData({
         name: product.name || "",
@@ -71,9 +71,7 @@ export default function ProductForm({ product }) {
         stock: product.stock?.toString() || "",
         unitType: product.unitType || "piece",
         featured: product.featured ? product.featured : "none",
-        addedDate: product.addedDate
-          ? new Date(product.addedDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
+        addedDate: product.addedDate,
         discountPrice: product.discountPrice?.toString() || "",
         discountPercentage: product.discountPercentage?.toString() || "",
         isActive: product.isActive !== false,
@@ -190,6 +188,12 @@ export default function ProductForm({ product }) {
 
     if (!formData.categoryId) {
       toast.error("Please select a category");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.image || formData.image.trim() === "") {
+      toast.error("Product image is required");
       setIsLoading(false);
       return;
     }
@@ -485,7 +489,7 @@ export default function ProductForm({ product }) {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? "Saving..." : "Save Product"}
+              {product ? "Update" : "Create"} Product
             </Button>
           </div>
         </form>

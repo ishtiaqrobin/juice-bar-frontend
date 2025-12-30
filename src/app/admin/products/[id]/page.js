@@ -33,28 +33,28 @@ export default function EditProductPage({ params }) {
             setProduct(response.data.data);
         } catch (error) {
             console.error("Error fetching product:", error);
-            toast.error("Failed to load product");
+            toast.error("Product not found");
             router.push("/admin/products");
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">Loading...</div>
-            </div>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <div className="container mx-auto px-4 py-8">
+    //             <div className="text-center">Loading...</div>
+    //         </div>
+    //     );
+    // }
 
-    if (!product) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">Product not found</div>
-            </div>
-        );
-    }
+    // if (!product) {
+    //     return (
+    //         <div className="container mx-auto px-4 py-8">
+    //             <div className="text-center">Product not found</div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="container mx-auto px- py-">
