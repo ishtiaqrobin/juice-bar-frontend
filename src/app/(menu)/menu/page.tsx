@@ -40,6 +40,8 @@ interface Product {
   discountPrice?: number | null;
   discountPercentage?: number | null;
   category?: Category;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 // Optimized Product Image Component for mobile users
@@ -124,6 +126,14 @@ const ProductImage = ({
       />
     </div>
   );
+};
+
+// Helper function to add cache-busting query parameter
+const getCacheBustedImageUrl = (imageUrl: string | null | undefined, updatedAt: Date | string): string => {
+  if (!imageUrl) return imageUrl || '';
+  const timestamp = new Date(updatedAt).getTime();
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}v=${timestamp}`;
 };
 
 export default function MenuPage(): JSX.Element {
@@ -690,7 +700,7 @@ export default function MenuPage(): JSX.Element {
                         <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
                           <div className="relative">
                             <ProductImage
-                              src={item.image || "/placeholder-image.jpg"}
+                              src={getCacheBustedImageUrl(item.image, item.updatedAt)}
                               alt={item.name}
                               width={220}
                               height={220}
@@ -699,7 +709,7 @@ export default function MenuPage(): JSX.Element {
                             />
                             {item.stock <= 0 && (
                               <ProductImage
-                                src={item.image || "/placeholder-image.jpg"}
+                                src={getCacheBustedImageUrl(item.image, item.updatedAt)}
                                 alt={item.name}
                                 width={220}
                                 height={220}

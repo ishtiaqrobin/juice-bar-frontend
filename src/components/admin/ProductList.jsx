@@ -120,6 +120,14 @@ const ProductImage = ({ src, alt, className }) => {
   );
 };
 
+// Helper function to add cache-busting query parameter
+const getCacheBustedImageUrl = (imageUrl, updatedAt) => {
+  if (!imageUrl) return imageUrl || "";
+  const timestamp = new Date(updatedAt).getTime();
+  const separator = imageUrl.includes("?") ? "&" : "?";
+  return `${imageUrl}${separator}v=${timestamp}`;
+};
+
 const SpinnerCustom = () => (
   <div className="flex items-center justify-center">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -314,7 +322,10 @@ export default function ProductList() {
                 <CardHeader className="p-3 md:p-4">
                   <CardImage className="relative">
                     <ProductImage
-                      src={product.image || "/placeholder-image.jpg"}
+                      src={getCacheBustedImageUrl(
+                        product.image,
+                        product.updatedAt
+                      )}
                       alt={product.name}
                       className={`w-full h-56 object-cover rounded-lg ${
                         product.stock <= 0 ? "grayscale" : ""
