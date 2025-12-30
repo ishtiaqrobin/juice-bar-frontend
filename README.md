@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Friends Juice Bar Frontend
 
-## Getting Started
+Next.js 15 (App Router) based admin + customer experience for Friends Juice Bar. The project now uses:
 
-First, run the development server:
+- **Database access:** Drizzle ORM + mysql2
+- **Authentication:** NextAuth (Credentials provider)
+- **UI:** Tailwind-based design system with Radix primitives
+- **Deployment targets:** Local (XAMPP) and cPanel Node.js hosting
+
+All Prisma dependencies and schema files have been removed in favour of Drizzle to keep the runtime lightweight for shared hosting.
+
+---
+
+## Local Development
 
 ```bash
+npm install
+
+# Environment (create .env.local)
+DATABASE_URL="mysql://root:@localhost:3306/juice_bar"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="set-a-strong-secret"
+
+# Database schema + seed (against your local MySQL / XAMPP)
+npm run db:migrate
+npm run db:seed
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Drizzle migrations are configured in `drizzle.config.ts`. `npm run db:migrate` uses `drizzle-kit push` so it is safe to run repeatedly on development and staging databases.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key NPM Scripts
 
-## Learn More
+| Script                   | Description                                                   |
+| ------------------------ | ------------------------------------------------------------- |
+| `npm run dev`            | Run Next.js dev server                                        |
+| `npm run build`          | Create production build (`.next/`)                            |
+| `npm run start`          | Start custom Next.js server (uses `server.js`)                |
+| `npm run lint`           | ESLint                                                        |
+| `npm run db:migrate`     | Apply schema changes using Drizzle                            |
+| `npm run db:seed`        | Seed essential data (admin user, sample products, etc.)       |
+| `npm run package:cpanel` | Build and create a deployment ZIP for cPanel (`dist/deploy/`) |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment Docs
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The following markdown files contain detailed deployment instructions (Bangla + English mix tailored for this project):
 
-## Deploy on Vercel
+- `README_SETUP.md` – Tech stack, environment variables, and local setup guide
+- `DEPLOY_INSTRUCTIONS.md` – Step-by-step cPanel deployment walkthrough
+- `QUICK_DEPLOY.md` – Bangla quick-reference for repeating deployments
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Always review and keep those files updated when the deployment process changes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## cPanel Quick Reference
+
+- **Domain:** `juicebar.hasanalicollege.com`
+- **Application Root:** `/home/hasanali/juicebar.hasanalicollege.com`
+- **MySQL Database:** `hasanali_juice_bar_db`
+- **MySQL User:** `hasanali_juice_bar_user`
+- **Node.js Startup File:** `server.js`
+
+Use `npm run package:cpanel` to generate `dist/deploy/juice-bar-frontend-cpanel-*.zip`. Upload and extract that archive in the application root, then follow the commands and environment setup described in `DEPLOY_INSTRUCTIONS.md`.
+
+---
+
+## Support
+
+If you run into build or deployment issues:
+
+1. Confirm `.env` / `.env.production` values match the target database and domain.
+2. Re-run `npm run db:migrate` to ensure schema is current.
+3. Check cPanel Node.js App Manager logs after restarting the app.
+4. Refer to the troubleshooting notes in `DEPLOY_INSTRUCTIONS.md` and `QUICK_DEPLOY.md`.
+
+Happy deploying! 🚀
+# juice-bar-frontend
