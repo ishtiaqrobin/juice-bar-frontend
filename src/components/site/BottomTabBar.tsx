@@ -12,13 +12,13 @@ import IconAccount from "@/assets/svg/icon_account.svg";
 import IconActiveAccount from "@/assets/svg/icon_account_active.svg";
 import IconCart from "@/assets/svg/icon_cart.svg";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/contexts/AuthContext";
 import React from "react";
 
 export function BottomTabBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user, logout } = useAuth();
   const [showAccountPopup, setShowAccountPopup] = React.useState(false);
 
   const toggleAccountPopup = () => {
@@ -30,7 +30,8 @@ export function BottomTabBar() {
   };
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" });
+    await logout();
+    router.push("/");
     setShowAccountPopup(false);
   };
 
@@ -163,7 +164,7 @@ export function BottomTabBar() {
           </div>
 
           <div className="relative account-popup-container">
-            {session ? (
+            {user ? (
               <button
                 onClick={toggleAccountPopup}
                 className="h-[45px] flex flex-col items-center"
@@ -193,8 +194,8 @@ export function BottomTabBar() {
                   <Image
                     src={
                       pathname === "/login" ||
-                      pathname === "/registration" ||
-                      pathname === "/forgot-password"
+                        pathname === "/registration" ||
+                        pathname === "/forgot-password"
                         ? IconActiveAccount
                         : IconAccount
                     }
@@ -210,7 +211,7 @@ export function BottomTabBar() {
             )}
 
             {/* Account Popup Bottom Sheet */}
-            {showAccountPopup && session && (
+            {showAccountPopup && user && (
               <div className="fixed inset-0 z-50 flex items-end justify-center">
                 {/* Backdrop */}
                 <button
@@ -243,7 +244,7 @@ export function BottomTabBar() {
                       Dashboard
                     </button>
 
-                    {session?.user?.role === "ADMIN" ? (
+                    {user?.role === "ADMIN" ? (
                       <button
                         onClick={handleNavigateToDashboard}
                         className="w-full bg-primary text-white py-3 rounded-full font-medium hover:cursor-pointer text-base leading-5"

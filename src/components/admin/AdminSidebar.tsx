@@ -34,7 +34,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 // Navigation items for admin panel
 const adminNavItems = [
@@ -99,7 +100,13 @@ const organization = {
 
 function AdminSidebarContent() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await logout();
+    router.push("/");
+  };
 
   return (
     <>
@@ -174,19 +181,19 @@ function AdminSidebarContent() {
         <div className="flex items-center gap-3 px-4 py-2">
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={session?.user?.image || ""}
-              alt={session?.user?.name || ""}
+              src={user?.image || ""}
+              alt={user?.name || ""}
             />
             <AvatarFallback>
-              {session?.user?.name?.charAt(0) || ""}
+              {user?.name?.charAt(0) || ""}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col flex-1 min-w-0">
             <span className="text-sm font-medium truncate">
-              {session?.user?.name || ""}
+              {user?.name || ""}
             </span>
             <span className="text-xs text-muted-foreground truncate">
-              {session?.user?.email || ""}
+              {user?.email || ""}
             </span>
           </div>
           <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -196,7 +203,7 @@ function AdminSidebarContent() {
         <Separator />
         <div className="px-4 py-2">
           <Button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={handleSignOut}
             variant="ghost"
             size="sm"
             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:cursor-pointer"

@@ -1,12 +1,14 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api-client";
 
 interface FormData {
   name: string;
@@ -15,7 +17,7 @@ interface FormData {
 }
 
 export default function UserProfileComponent() {
-  const { data: session, update, status } = useSession();
+  const { user, isLoading: loading, updateUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -25,48 +27,65 @@ export default function UserProfileComponent() {
     phone: "",
   });
 
-  // Update form data when session changes
+  // Update form data when user changes
   React.useEffect(() => {
-    if (session?.user) {
+    if (user) {
       setFormData({
-        name: session.user.name || "",
-        email: session.user.email || "",
-        phone: (session.user as { phone?: string }).phone || "",
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
       });
-      if (session.user.image) {
-        setProfileImage(session.user.image);
+      if (user.image) {
+        setProfileImage(user.image);
       }
     }
-  }, [session]);
+  }, [user]);
 
-  // Remove the automatic session refresh to prevent infinite loop
-
-  console.log(session?.user, "User Data From Profile Page");
-  console.log("Session status:", status);
-  console.log("User ID from session:", session?.user?.id);
-  console.log("User name from session:", session?.user?.name);
-  console.log("User email from session:", session?.user?.email);
-  console.log("User phone from session:", session?.user?.phone);
-  console.log("User image from session:", session?.user?.image);
-  console.log("User role from session:", session?.user?.role);
-
-  // Show loading while session is being fetched
-  if (status === "loading") {
+  // Show loading while auth is being checked
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="flex flex-col justify-center items-center h-64 space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <div className="text-lg text-gray-600">Loading your profile...</div>
+      <div className="border rounded-lg p-6 space-y-4">
+        <Skeleton className="h-7 w-48" />
+        <div className="space-y-6">
+          {/* Profile Image Skeleton */}
+          <div className="flex flex-col items-center space-y-4">
+            <Skeleton className="w-32 h-32 rounded-full" />
+            <Skeleton className="h-10 w-[195px]" />
+          </div>
+
+          {/* Form Fields Skeleton */}
+          <div className="space-y-4">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+
+            {/* Email Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+
+            {/* Phone Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+
+          {/* Button Skeleton */}
+          <Skeleton className="h-10 w-full" />
         </div>
       </div>
     );
   }
 
   // Redirect if not logged in
-  if (status === "unauthenticated" || !session) {
+  if (!user) {
     router.push("/login");
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex justify-center items-center h-64">
           <div className="text-lg">Redirecting to login...</div>
         </div>
@@ -85,26 +104,12 @@ export default function UserProfileComponent() {
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Create FormData and append file
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("kind", "profile");
-
       try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setProfileImage(data.url);
-          toast.success("Profile image uploaded successfully!");
-        } else {
-          toast.error("Failed to upload image. Please try again.");
-        }
+        const response = await api.upload.profile(file);
+        setProfileImage(response.data.data.url);
+        toast.success("Profile image uploaded successfully!");
       } catch {
-        toast.error("Error uploading image. Please try again.");
+        toast.error("Failed to upload image. Please try again.");
       }
     }
   };
@@ -114,77 +119,33 @@ export default function UserProfileComponent() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          profileImage,
-        }),
+      const response = await api.users.updateProfile({
+        ...formData,
+        image: profileImage || undefined,
       });
 
-      if (response.ok) {
-        const updatedUser = await response.json();
+      // Update user in AuthContext with fresh data from backend
+      updateUser(response.data.data);
 
-        // Update form data with the response first
-        setFormData({
-          name: updatedUser.name || "",
-          email: updatedUser.email || "",
-          phone: updatedUser.phone || "",
-        });
-        if (updatedUser.image) {
-          setProfileImage(updatedUser.image);
-        }
-
-        // Force session refresh by calling update with new data
-        await update({
-          name: updatedUser.name,
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-          image: updatedUser.image,
-        });
-
-        toast.success("Profile updated successfully!");
-
-        // No need to reload the page, session will be updated automatically
-      } else {
-        toast.error("Failed to update profile. Please try again.");
-      }
+      toast.success("Profile updated successfully!");
     } catch {
-      toast.error("Error updating profile. Please try again.");
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // const handleLogout = async () => {
-  //   await signOut({ callbackUrl: "/login" });
-  // };
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      {/* <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Your Profile</h1>
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
-        </Button>
-      </div> */}
-
+    <div className="border rounded-lg p-6 space-y-4">
+      <h2 className="text-xl font-semibold">Profile Information</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           {/* Profile Image */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-              {profileImage || session?.user?.image ? (
+              {profileImage || user?.image ? (
                 <Image
-                  src={profileImage || session?.user?.image || ""}
+                  src={profileImage || user?.image || ""}
                   alt="Profile"
                   fill
                   className="object-cover"

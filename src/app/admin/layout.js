@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarInset, SidebarTrigger, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -40,8 +41,8 @@ export default function AdminLayout({ children }) {
                                             const href = "/" + segments.slice(0, index + 2).join("/");
                                             const isLast = index === trailSegments.length - 1;
                                             return (
-                                                <>
-                                                    <BreadcrumbItem key={href}>
+                                                <React.Fragment key={href}>
+                                                    <BreadcrumbItem>
                                                         {isLast ? (
                                                             <BreadcrumbPage>{formatLabel(segment)}</BreadcrumbPage>
                                                         ) : (
@@ -51,7 +52,7 @@ export default function AdminLayout({ children }) {
                                                     {!isLast && (
                                                         <BreadcrumbSeparator className="hidden md:block" />
                                                     )}
-                                                </>
+                                                </React.Fragment>
                                             );
                                         })}
                                     </>

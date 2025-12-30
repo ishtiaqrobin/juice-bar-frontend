@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRightIcon } from "lucide-react";
@@ -39,8 +40,8 @@ export function BreadcrumbWithCustomSeparator() {
               const isLast = index === segments.length - 1;
               const label = toTitleCase(segment);
               return (
-                <>
-                  <BreadcrumbItem key={href}>
+                <React.Fragment key={href}>
+                  <BreadcrumbItem>
                     {isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
                     ) : (
@@ -54,7 +55,7 @@ export function BreadcrumbWithCustomSeparator() {
                       <ChevronRightIcon className="size-3.5" />
                     </BreadcrumbSeparator>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </>

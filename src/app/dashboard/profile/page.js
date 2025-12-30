@@ -1,10 +1,10 @@
 import React from 'react';
-import UserProfileComponent from '@/components/dashboard/UserProfile';
+import UserProfileWithTabs from '@/components/dashboard/UserProfileWithTabs';
 
 const DashboardProfilePage = () => {
     return (
         <div className="container mx-auto px- py-">
-            <UserProfileComponent />
+            <UserProfileWithTabs />
         </div>
     );
 };

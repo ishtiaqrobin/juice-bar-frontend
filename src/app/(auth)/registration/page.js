@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import IconFJBStripe from '@/assets/svg/icon_fjb_strip.svg'
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegistrationPage() {
     const [useEmail, setUseEmail] = useState(true);
@@ -19,10 +19,9 @@ export default function RegistrationPage() {
         password: '',
         confirmPassword: ''
     });
-    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const router = useRouter();
+    const { register, isLoading } = useAuth();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -34,35 +33,28 @@ export default function RegistrationPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
+
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            toast.error('Passwords do not match');
+            return;
+        }
 
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: useEmail ? formData.email : null,
-                    phone: !useEmail ? formData.phone : null,
-                    password: formData.password,
-                    confirmPassword: formData.confirmPassword
-                }),
-            });
+            const registerData = {
+                name: formData.name,
+                password: formData.password,
+            };
 
-            const data = await response.json();
-
-            if (response.ok) {
-                toast.success('Registration successful! Please login.');
-                router.push('/login');
+            if (useEmail) {
+                registerData.email = formData.email;
             } else {
-                toast.error(data.error || 'Registration failed');
+                registerData.phone = "+88" + formData.phone;
             }
+
+            await register(registerData);
         } catch {
-            toast.error('Network error. Please try again.');
-        } finally {
-            setIsLoading(false);
+            // Error is already handled in AuthContext
         }
     };
 

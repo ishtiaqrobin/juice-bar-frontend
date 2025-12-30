@@ -9,13 +9,14 @@ import {
   CardCategory,
 } from "@/components/ui/card";
 import { BreadcrumbWithCustomSeparator } from "@/components/site/BreadcrumbWithCustomSeparator";
+import { Skeleton } from "@/components/ui/skeleton";
 import FilterIcon from "@/assets/svg/icon_filter.svg";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeroCarousel } from "@/components/site/HeroCarousel";
 // import StartOrder from "@/components/site/StartOrder";
 import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg";
-import { useCategories } from "@/hooks/useCategories";
-import { useProducts } from "@/hooks/useProducts";
+import { api } from "@/lib/api-client";
+import { formatPrice } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -42,17 +43,44 @@ interface Product {
 }
 
 export default function MenuPage(): JSX.Element {
-  // Use SWR hooks for data fetching
-  const {
-    categories,
-    isLoading: categoriesLoading,
-    isError: categoriesError,
-  } = useCategories();
-  const {
-    products,
-    isLoading: productsLoading,
-    isError: productsError,
-  } = useProducts();
+  // State for data
+  const [categories, setCategories] = React.useState<Category[]>([]);
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = React.useState(true);
+  const [productsLoading, setProductsLoading] = React.useState(true);
+  const [categoriesError, setCategoriesError] = React.useState(false);
+  const [productsError, setProductsError] = React.useState(false);
+
+  // Fetch data on mount
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setCategoriesLoading(true);
+        const catResponse = await api.categories.getAll();
+        setCategories(catResponse.data.data || []);
+        setCategoriesError(false);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategoriesError(true);
+      } finally {
+        setCategoriesLoading(false);
+      }
+
+      try {
+        setProductsLoading(true);
+        const prodResponse = await api.products.getAll();
+        setProducts(prodResponse.data.data || []);
+        setProductsError(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProductsError(true);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // UI states
   const [selectedCategory, setSelectedCategory] = React.useState<string>("");
@@ -323,6 +351,7 @@ export default function MenuPage(): JSX.Element {
     categories.forEach((category: Category) => {
       grouped[category.id] = products
         .filter((product: Product) => product.categoryId === category.id)
+        .filter((product: Product) => product.isActive)
         .filter(
           (product: Product) => !appliedShowOnlyAvailable || product.stock > 0
         )
@@ -332,19 +361,6 @@ export default function MenuPage(): JSX.Element {
     return grouped;
   }, [categories, products, appliedShowOnlyAvailable]);
 
-  // Loading component
-  if (categoriesLoading || productsLoading) {
-    return (
-      <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading menu...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Error component
   if (categoriesError || productsError) {
@@ -370,11 +386,14 @@ export default function MenuPage(): JSX.Element {
       {/* <div className="mt-1 md:mt-0 px-4 md:px-0">
         <StartOrder />
       </div> */}
+
+      {/* Logo */}
       <div className="max-w-[972px] mx-auto px-4 py-4 md:py-6">
         <div className="hidden md:block mb-3">
           <Image src={IconFJBStripe} alt="Logo" width={40} height={16}></Image>
         </div>
 
+        {/* Breadcrumb */}
         <div className="hidden md:block">
           <BreadcrumbWithCustomSeparator />
         </div>
@@ -384,7 +403,7 @@ export default function MenuPage(): JSX.Element {
           <HeroCarousel />
         </section>
 
-        {/* desktop menu */}
+        {/* Desktop menu */}
         <div className="mt-4 hidden md:flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-[31px] leading-[37px] font-bold tracking-normal text-stone-900">
@@ -479,35 +498,49 @@ export default function MenuPage(): JSX.Element {
               ref={scrollContainerRef}
               className="relative flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth text-sm leading-[18px] font-medium px-10"
             >
-              {categories
-                .filter((cat: Category) => cat.isActive)
-                .sort((a: Category, b: Category) =>
-                  a.name.localeCompare(b.name)
-                )
-                .map((cat: Category) => (
-                  <button
-                    key={cat.id}
-                    ref={(el) => {
-                      tabRefs.current[cat.id] = el;
+              {categoriesLoading ? (
+                // Skeleton for category tabs
+                <>
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                  <Skeleton className="h-[25px] w-24 my-2.5" />
+                </>
+              ) : (
+                <>
+                  {categories
+                    .filter((cat: Category) => cat.isActive)
+                    .sort((a: Category, b: Category) =>
+                      a.name.localeCompare(b.name)
+                    )
+                    .map((cat: Category) => (
+                      <button
+                        key={cat.id}
+                        ref={(el) => {
+                          tabRefs.current[cat.id] = el;
+                        }}
+                        className={`px-4 h-[47.5px] hover:cursor-pointer whitespace-nowrap transition-colors duration-200 ${selectedCategory === cat.id
+                          ? "text-primary"
+                          : "text-[#0009]"
+                          }`}
+                        onClick={() => handleCategoryClick(cat.id)}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  {/* Animated underline indicator */}
+                  <span
+                    className="pointer-events-none absolute bottom-0 h-[2px] bg-primary transition-all duration-300 ease-out"
+                    style={{
+                      left: `${tabIndicator.left}px`,
+                      width: `${tabIndicator.width}px`,
                     }}
-                    className={`px-4 h-[47.5px] hover:cursor-pointer whitespace-nowrap transition-colors duration-200 ${
-                      selectedCategory === cat.id
-                        ? "text-primary"
-                        : "text-[#0009]"
-                    }`}
-                    onClick={() => handleCategoryClick(cat.id)}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              {/* Animated underline indicator */}
-              <span
-                className="pointer-events-none absolute bottom-0 h-[2px] bg-primary transition-all duration-300 ease-out"
-                style={{
-                  left: `${tabIndicator.left}px`,
-                  width: `${tabIndicator.width}px`,
-                }}
-              />
+                  />
+                </>
+              )}
             </div>
             <button
               onClick={() => handleScroll("right")}
@@ -520,112 +553,142 @@ export default function MenuPage(): JSX.Element {
 
         {/* Display products by groups - Dynamic */}
         <div className="mb-24 md:mb-0">
-          {categories
-            .filter((cat: Category) => cat.isActive)
-            .sort((a: Category, b: Category) => a.name.localeCompare(b.name))
-            .map((category: Category) => (
-              <div
-                key={category.id}
-                ref={(el) => {
-                  sectionRefs.current[category.id] = el;
-                }}
-              >
-                <CardCategory>{category.name}</CardCategory>
-                <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {groupedItems[category.id]?.map((item: Product) => (
-                    <Card
-                      key={item.id}
-                      className={`${item.stock <= 0 ? "opacity-75" : ""}`}
-                    >
-                      <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
-                        <div className="relative">
-                          <Image
-                            src={item.image || "/placeholder-image.jpg"}
-                            alt={item.name}
-                            width={220}
-                            height={220}
-                            className={`sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
-                              item.stock <= 0 ? "grayscale" : ""
-                            }`}
-                          />
-                          {item.stock <= 0 && (
+          {categoriesLoading || productsLoading ? (
+            // Skeleton for loading state
+            <div className="space-y-8">
+              {[1, 2].map((section) => (
+                <div key={section}>
+                  <Skeleton className="h-8 w-40 mb-6" />
+                  <div className="grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {[1, 2, 3, 4].map((card) => (
+                      <div key={card}>
+                        {/* Mobile: Horizontal layout */}
+                        <div className="flex sm:hidden flex-row gap-4">
+                          <Skeleton className="h-[100px] w-[100px] rounded-lg flex-shrink-0" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-full" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-6 w-20" />
+                          </div>
+                        </div>
+                        {/* Desktop: Vertical layout */}
+                        <div className="hidden sm:flex flex-col space-y-3">
+                          <Skeleton className="h-[220px] w-[220px] rounded-xl" />
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-6 w-24" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Actual products
+            categories
+              .filter((cat: Category) => cat.isActive)
+              .sort((a: Category, b: Category) => a.name.localeCompare(b.name))
+              .map((category: Category) => (
+                <div
+                  key={category.id}
+                  ref={(el) => {
+                    sectionRefs.current[category.id] = el;
+                  }}
+                >
+                  <CardCategory>{category.name}</CardCategory>
+                  <div className="my-8 grid gap-x-5 gap-y-5 sm:gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {groupedItems[category.id]?.map((item: Product) => (
+                      <Card
+                        key={item.id}
+                        className={`${item.stock <= 0 ? "opacity-75" : ""}`}
+                      >
+                        <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
+                          <div className="relative">
                             <Image
                               src={item.image || "/placeholder-image.jpg"}
                               alt={item.name}
                               width={220}
                               height={220}
-                              className={`absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${
-                                item.stock <= 0 ? "grayscale" : ""
-                              }`}
+                              className={`sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${item.stock <= 0 ? "grayscale" : ""
+                                }`}
                             />
-                          )}
-                        </div>
-                        {/* card name, tag and price */}
-                        <div>
-                          <CardTitle className="text-base mt-2">
-                            {item.name}
-                          </CardTitle>
-                          <div className="mt-2 flex-col items-center justify-between">
-                            <div className="flex flex-wrap gap-1">
-                              {item.featured && (
-                                <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded">
-                                  <p className="text-[11px] leading-[14px] font-normal text-white">
-                                    {item.featured}
-                                  </p>
-                                </button>
-                              )}
-                              {item.stock <= 0 && (
-                                <span className="bg-red-600 text-white px-2 py-1 rounded text-[11px] font-semibold">
-                                  Out of Stock
+                            {item.stock <= 0 && (
+                              <Image
+                                src={item.image || "/placeholder-image.jpg"}
+                                alt={item.name}
+                                width={220}
+                                height={220}
+                                className={`absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center sm:h-[220px] sm:w-[220px] sm:mx-0 mx-2.5 h-[100px] w-[100px] sm:rounded-xl rounded-lg object-cover ${item.stock <= 0 ? "grayscale" : ""
+                                  }`}
+                              />
+                            )}
+                          </div>
+                          {/* card name, tag and price */}
+                          <div>
+                            <CardTitle className="text-base mt-2">
+                              {item.name}
+                            </CardTitle>
+                            <div className="mt-2 flex-col items-center justify-between">
+                              <div className="flex flex-wrap gap-1">
+                                {item.featured && (
+                                  <button className="bg-[#A7A7A7] px-2.5 py-1.5 rounded">
+                                    <p className="text-[11px] leading-[14px] font-normal text-white">
+                                      {item.featured}
+                                    </p>
+                                  </button>
+                                )}
+                                {item.stock <= 0 && (
+                                  <span className="bg-red-600 text-white px-2 py-1 rounded text-[11px] font-semibold">
+                                    Out of Stock
+                                  </span>
+                                )}
+                                {/* {item.stock > 0 && item.stock <= 5 && (
+                                <span className="bg-orange-500 text-white px-2 py-1 rounded text-[11px] font-bold">
+                                  Low Stock
                                 </span>
-                              )}
-                              {/* {item.stock > 0 && item.stock <= 5 && (
-                              <span className="bg-orange-500 text-white px-2 py-1 rounded text-[11px] font-bold">
-                                Low Stock
-                              </span>
-                            )} */}
-                            </div>
-                            <div className="mt-2 flex items-center gap-2">
-                              {item.discountPrice ? (
-                                <>
-                                  <span
-                                    className={`text-[17px] leading-[22px] font-bold ${
-                                      item.stock <= 0
+                              )} */}
+                              </div>
+                              <div className="mt-2 flex items-center gap-2">
+                                {item.discountPrice ? (
+                                  <>
+                                    <span
+                                      className={`text-[17px] leading-[22px] font-bold ${item.stock <= 0
                                         ? "text-gray-500"
                                         : "text-red-600"
-                                    }`}
-                                  >
-                                    ৳{item.discountPrice}
-                                  </span>
-                                  <span className="text-sm text-gray-500 line-through">
-                                    ৳{item.price}
-                                  </span>
-                                  {item.discountPercentage && (
-                                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                                      -{item.discountPercentage}%
+                                        }`}
+                                    >
+                                      ৳{formatPrice(item.discountPrice)}
                                     </span>
-                                  )}
-                                </>
-                              ) : (
-                                <span
-                                  className={`text-[17px] leading-[22px] font-bold ${
-                                    item.stock <= 0
+                                    <span className="text-sm text-gray-500 line-through">
+                                      ৳{formatPrice(item.price)}
+                                    </span>
+                                    {item.discountPercentage && (
+                                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                        -{formatPrice(item.discountPercentage)}%
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span
+                                    className={`text-[17px] leading-[22px] font-bold ${item.stock <= 0
                                       ? "text-gray-500"
                                       : "text-black"
-                                  }`}
-                                >
-                                  ৳{item.price}
-                                </span>
-                              )}
+                                      }`}
+                                  >
+                                    ৳{formatPrice(item.price)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )) || []}
+                        </CardContent>
+                      </Card>
+                    )) || []}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+          )}
         </div>
       </div>
     </div>

@@ -1,14 +1,3 @@
-// import React, { Suspense } from 'react'
-// import LoginClient from './LoginClient'
-
-// export default function LoginPage() {
-//     return (
-//         <Suspense fallback={<div>Loading...</div>}>
-//             <LoginClient />
-//         </Suspense>
-//     )
-// }
-
 "use client";
 
 import React, { useState } from "react";
@@ -18,9 +7,7 @@ import IconFJBStripe from "@/assets/svg/icon_fjb_strip.svg";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
     const [useEmail, setUseEmail] = useState(true);
@@ -28,58 +15,42 @@ export default function LoginPage() {
         email: "",
         phone: "",
         password: "",
+        rememberMe: false,
     });
-    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const router = useRouter();
-    // const searchParams = useSearchParams();
-
-    // useEffect(() => {
-    //     const message = searchParams.get("message");
-    //     if (message) {
-    //         setMessage(message);
-    //     }
-    // }, [searchParams]);
+    const { login, isLoading } = useAuth();
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: type === "checkbox" ? checked : value,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
 
         try {
-            const result = await signIn("credentials", {
-                email: useEmail ? formData.email : null,
-                phone: !useEmail ? formData.phone : null,
+            // Send email or phone separately based on useEmail flag
+            const loginData = {
                 password: formData.password,
-                redirect: false,
-            });
+            };
 
-            if (result?.error) {
-                toast.error("Invalid credentials");
-            } else if (result?.ok) {
-                toast.success("Login successful!");
-                // Get session to check user role
-                const session = await getSession();
-                if (session?.user?.role === "ADMIN") {
-                    // router.push("/admin");
-                    router.push("/");
-                } else {
-                    router.push("/");
-                }
+            if (useEmail) {
+                loginData.email = formData.email;
+            } else {
+                // Add country code to phone number
+                loginData.phone = "+88" + formData.phone;
             }
+
+            await login({ ...loginData, rememberMe: formData.rememberMe });
+            // Success toast and navigation are handled by AuthContext
         } catch {
-            toast.error("Login failed. Please try again.");
-        } finally {
-            setIsLoading(false);
+            // Error toast is already handled by AuthContext
         }
     };
+
     return (
         <div className="px-4 md:px-0">
             <div className="w-full md:max-w-xl mx-auto bg-gray- rounded-lg px-0 md:px-6 pb-16 my-0">
@@ -102,7 +73,6 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 grid gap-4">
-
                     <div>
                         {useEmail ? (
                             <div className="grid gap-2">
@@ -167,12 +137,27 @@ export default function LoginPage() {
                                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                             </button>
                         </div>
-                        <div className="flex justify-end items-center">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="rememberMe"
+                                    name="rememberMe"
+                                    checked={formData.rememberMe}
+                                    onChange={handleInputChange}
+                                    className="w-3.5 h-3.5 text-primary bg-gray-100 border-gray-300 rounded"
+                                />
+                                <label htmlFor="rememberMe" className="text-sm text-stone-700 cursor-pointer">
+                                    Remember Me
+                                </label>
+                            </div>
                             <Link href="/forgot-password" className="text-sm text-primary">
                                 Forgot Password?
                             </Link>
                         </div>
                     </div>
+
+
                     <Button
                         type="submit"
                         className="bg-primary h-10 text-white hover:cursor-pointer"

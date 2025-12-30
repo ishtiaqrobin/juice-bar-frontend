@@ -1,146 +1,101 @@
 # Quick Deploy Guide (বাংলা)
 
-## 🚀 দ্রুত ডিপ্লয় করার ধাপ সমূহ
+## 🚀 দ্রুত ডিপ্লয় করার ধাপগুলো
 
-### ১. লোকে বিল্ড করুন
+### ১. লোকাল কমান্ড
 
 ```bash
-# Windows এ এই command চালান
-build-production.bat
-
-# অথবা manually
 npm install
-npx prisma generate
-npm run build
+npm run db:migrate   # Drizzle schema push
+npm run db:seed      # প্রথমবারের জন্য admin + sample data
+npm run package:cpanel
 ```
 
-### ২. cPanel এ Upload করুন
+`dist/deploy/` ফোল্ডারে `juice-bar-frontend-cpanel-*.zip` তৈরি হবে।
 
-- cPanel → File Manager → `public_html` বা আপনার domain folder
-- এই ফোল্ডারগুলো upload করুন:
-  - `.next/` (পুরো ফোল্ডার)
-  - `public/` (পুরো ফোল্ডার)
-  - `server.js`
-  - `package.json`
-  - `package-lock.json`
-  - `next.config.ts`
+### ২. ZIP আপলোড + Extract
 
-### ৩. Terminal এ Dependencies Install করুন
+1. cPanel → File Manager → `/home/hasanali/juicebar.hasanalicollege.com`
+2. ZIP আপলোড করে "Extract" করুন
+3. পুরোনো ফাইল থাকলে আগে ব্যাকআপ নিন
 
-cPanel এর SSH/Terminal এ:
-
-```bash
-cd public_html  # আপনার folder path
-npm install --production
-npx prisma generate
+```
+juicebar.hasanalicollege.com/
+ ├─ .next/
+ ├─ public/
+ ├─ src/
+ ├─ scripts/
+ ├─ package.json
+ ├─ server.js
+ └─ ...
 ```
 
-### ৪. Environment Variables সেটাপ করুন
+### ৩. Environment Variables
 
-cPanel → File Manager → `.env` file তৈরি করুন:
+`.env.production` ফাইল তৈরি করুন অথবা Node.js App Manager থেকে add করুন:
 
 ```env
-DATABASE_URL="mysql://ezbitlyc_juice_bar_user:Wk%24Y%28OwEPInC%29N%5E%25@localhost:3306/ezbitlyc_juice_bar_db"
-NEXTAUTH_URL="https://friendsjuicebar.ezbitly.com"
-NEXTAUTH_SECRET="sdfn23kLx8asdS09asdlk23n8asdflkjQWEr234asdfjkl="
+DATABASE_URL="mysql://hasanali_juice_bar_user:YOUR_DB_PASSWORD@localhost:3306/hasanali_juice_bar_db"
+NEXTAUTH_URL="https://juicebar.hasanalicollege.com"
+NEXTAUTH_SECRET="generate-a-strong-secret"
+NEXTAUTH_TRUST_HOST=true
 NODE_ENV=production
+PORT=3010
 ```
 
-**⚠️ গুরুত্বপূর্ণ:** Special characters escape করতে হবে:
+### ৪. cPanel Terminal
 
-- `$` → `%24`
-- `(` → `%28`
-- `)` → `%29`
-- `^` → `%5E`
-- `%` → `%25`
+```bash
+cd ~/juicebar.hasanalicollege.com
+npm install           # dev deps সহ
+npm run db:migrate
+npm run db:seed       # (optional, প্রথম deploy এ চালান)
+npm run build         # যদি লোকাল build সহ জিপ না করেন
+```
 
-### ৫. Node.js App Setup করুন
+### ৫. Node.js App Setup
 
 1. cPanel → Software → Node.js App
-2. "Create Application" click করুন
-3. Settings:
+2. Node.js version: **22.x** (available maximum)
+3. Application root: `juicebar.hasanalicollege.com`
+4. Startup file: `server.js`
+5. Environment variables add করুন
+6. "Restart App" চাপুন
 
-   - **Node.js version:** 18.x বা 20.x
-   - **Application mode:** Production
-   - **Application root:** `/home/ezbitlyc/public_html`
-   - **Application URL:** friendsjuicebar.ezbitly.com
-   - **Application startup file:** `server.js`
-   - **Port:** 1296
+### ৬. টেস্ট
 
-4. Environment Variables add করুন (উপরের .env এর values)
-
-### ৬. Database Setup করুন
-
-```bash
-# Prisma migrations run করুন
-npm run db:migrate
-
-# Database seed করুন (optional)
-npm run db:seed
-```
-
-### ৭. App Start করুন
-
-Node.js App Manager এ "Restart App" click করুন
-
-### ৮. Test করুন
-
-আপনার domain এ visit করুন: `https://friendsjuicebar.ezbitly.com`
+ব্রাউজারে যান → `https://juicebar.hasanalicollege.com`  
+Seed admin দিয়ে `/admin` রুটে লগইন করে দেখুন।
 
 ---
 
-## ⚡ দ্রুত Commands
+## ⚡ দ্রুত কমান্ডসমূহ
 
-### Local Development
-
-```bash
-npm run dev
-```
-
-### Production Build
-
-```bash
-npm run build
-npm start
-```
-
-### Database Commands
-
-```bash
-npm run db:migrate    # Deploy migrations
-npm run db:generate   # Generate Prisma client
-npm run db:seed       # Seed database
-```
+| কাজ                | কমান্ড                           |
+| ------------------ | -------------------------------- |
+| লোকাল ডেভ          | `npm run dev`                    |
+| ডাটাবেস মাইগ্রেট   | `npm run db:migrate`             |
+| সিড চালানো         | `npm run db:seed`                |
+| প্রোডাকশন বিল্ড    | `npm run build && npm run start` |
+| cPanel এর জন্য ZIP | `npm run package:cpanel`         |
 
 ---
 
-## 🐛 সমস্যা হলে
+## 🐛 ঝামেলা হলে
 
-### Build Error
-
-```bash
-rm -rf .next node_modules
-npm install
-npm run build
-```
-
-### Database Error
-
-```bash
-npx prisma db push
-npx prisma generate
-```
-
-### Port Error
-
-`server.js` এ port পরিবর্তন করুন:
-
-```javascript
-const port = process.env.PORT || 3000; // Different port
-```
+| ইস্যু       | সমাধান                                                                |
+| ----------- | --------------------------------------------------------------------- |
+| Build error | `rm -rf .next node_modules && npm install && npm run build`           |
+| DB error    | DATABASE_URL ঠিক আছে কিনা দেখুন → `npm run db:migrate`                |
+| Port issue  | `.env.production` এ `PORT` পরিবর্তন করুন এবং Node.js App এ আপডেট করুন |
+| Seed rerun  | `npm run db:seed` (idempotent – বারবার চালাতে পারবেন)                 |
 
 ---
 
-## 📞 সাহায্যের জন্য
+## 📚 বিস্তারিত গাইড
 
-সম্পূর্ণ গাইড দেখুন: `CPANEL_DEPLOYMENT.md`
+- পূর্ণ ডক: `DEPLOY_INSTRUCTIONS.md`
+- টেক/লোকাল সেটআপ: `README_SETUP.md`
+- ওভারভিউ: `README.md`
+
+সফল ডিপ্লয়! 🚀

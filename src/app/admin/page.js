@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Users, BarChart3, FileText } from 'lucide-react';
+import { Package, Users, BarChart3, FileText, Plus } from 'lucide-react';
 
 const AdminPage = () => {
     return (
@@ -82,7 +82,7 @@ const AdminPage = () => {
                         </Link>
                         <Link href="/admin/products/new">
                             <Button variant="outline" className="w-full justify-start hover:cursor-pointer">
-                                <Package className="mr-2 h-4 w-4" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 Add New Product
                             </Button>
                         </Link>

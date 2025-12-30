@@ -6,7 +6,8 @@ import { MobileSideDrawer } from "@/components/site/MobileSideDrawer";
 import Image from "next/image";
 import IconLogin from "@/assets/svg/icon_account.svg";
 import IconActiveLogin from "@/assets/svg/icon_account_active.svg";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,18 +22,17 @@ const navItems = [
   { href: "/promotions", label: "Promotions" },
   { href: "/menu", label: "Menu" },
   { href: "/rewards", label: "Rewards" },
-  // { href: "/contact", label: "Contact" },
-  // { href: "/admin", label: "Admin" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
-  // Don't render while session is loading
-  if (status === "loading") {
-    return null;
-  }
+  const handleSignOut = async () => {
+    await logout();
+    router.push("/");
+  };
 
   return (
     <header
@@ -72,7 +72,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-8 text-sm leading-[21px] font-medium">
-          {session ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-1 hover:cursor-pointer group">
@@ -99,7 +99,7 @@ export function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 mt-8">
                 <DropdownMenuItem asChild>
-                  {session?.user?.role === "ADMIN" ? (
+                  {user?.role === "ADMIN" ? (
                     <Link href="/admin" className="w-full cursor-pointer">
                       Admin Panel
                     </Link>
@@ -118,7 +118,7 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={handleSignOut}
                   className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
                 >
                   Sign Out

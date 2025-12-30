@@ -1,22 +1,20 @@
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import AuthProvider from "@/components/providers/AuthProvider";
-import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {
-  title: "FreshFruit - Fruits & Juices",
-  description: "Fresh organic fruits and juices everyday!",
+  title: "Friends Juice Bar",
+  description: "Fresh and Healthy Juices",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light" className={`bg-background text-foreground ${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className={GeistSans.className}>
+    <html lang="en" data-theme="light" className={`bg-background text-foreground ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+      <body className={`${GeistSans.className} antialiased`}>
         <AuthProvider>
-          <main className="min-h-[60vh] pb-0 md:pb-0">
-            {children}
-          </main>
+          {children}
           <Toaster />
         </AuthProvider>
       </body>

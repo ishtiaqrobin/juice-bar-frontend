@@ -1,41 +1,64 @@
-import { notFound } from 'next/navigation'
-import ProductForm from '@/components/admin/ProductForm'
-import { prisma } from '@/lib/prisma'
+"use client";
 
-async function getProduct(id) {
-    try {
-        const product = await prisma.product.findUnique({
-            where: { id },
-            include: {
-                category: true
-            }
-        })
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ProductForm from "@/components/admin/ProductForm";
+import { api } from "@/lib/api-client";
+import { toast } from "sonner";
 
-        if (!product) return null
+export default function EditProductPage({ params }) {
+    const router = useRouter();
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [productId, setProductId] = useState(null);
 
-        // Convert Decimal objects to plain numbers
-        return {
-            ...product,
-            price: product.price ? parseFloat(product.price.toString()) : 0,
-            discountPrice: product.discountPrice ? parseFloat(product.discountPrice.toString()) : null,
-            discountPercentage: product.discountPercentage ? parseFloat(product.discountPercentage.toString()) : null
+    useEffect(() => {
+        const unwrapParams = async () => {
+            const unwrapped = await params;
+            setProductId(unwrapped.id);
+        };
+        unwrapParams();
+    }, [params]);
+
+    useEffect(() => {
+        if (productId) {
+            fetchProduct();
         }
-    } catch (error) {
-        return null
-    }
-}
+    }, [productId]);
 
-export default async function EditProductPage({ params }) {
-    const { id } = await params
-    const product = await getProduct(id)
+    const fetchProduct = async () => {
+        try {
+            setLoading(true);
+            const response = await api.products.getById(productId);
+            setProduct(response.data.data);
+        } catch (error) {
+            console.error("Error fetching product:", error);
+            toast.error("Failed to load product");
+            router.push("/admin/products");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">Loading...</div>
+            </div>
+        );
+    }
 
     if (!product) {
-        notFound()
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center">Product not found</div>
+            </div>
+        );
     }
 
     return (
         <div className="container mx-auto px- py-">
             <ProductForm product={product} />
         </div>
-    )
+    );
 }

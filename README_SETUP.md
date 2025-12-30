@@ -1,262 +1,118 @@
 # Juice Bar Frontend - Tech Stack Setup
 
-এই প্রজেক্টে নিম্নলিখিত টেক স্ট্যাক ইমপ্লিমেন্ট করা হয়েছে:
+এই ডকুমেন্টটি লোকাল (XAMPP) এবং প্রোডাকশন (cPanel) উভয় পরিবেশের জন্য আপডেটেড সেটআপ গাইড।
 
 ## 🧱 টেক স্ট্যাক
 
-| লেয়ার        | টুল / প্রযুক্তি                   | বর্ণনা                                       |
-| ------------- | --------------------------------- | -------------------------------------------- |
-| Frontend (UI) | Next.js (App Router, SSR/ISR/SSG) | User-facing pages (menu, product view, etc.) |
-| Backend (API) | Next.js API Routes (app/api/\*)   | Product CRUD, NextAuth, Admin APIs           |
-| Database ORM  | Prisma                            | MySQL এর সাথে strongly typed ORM             |
-| Database      | MySQL (cPanel hosted)             | Product data store                           |
-| Hosting       | cPanel (NodeJS app setup)         | Same domain বা subdomain থেকে run হবে        |
-| Cache Layer   | Next.js ISR + CDN cache + SWR     | Best UX and performance                      |
-| Image Storage | /uploads folder in cPanel         | Static public file hosting for images        |
+| লেয়ার           | টুল / প্রযুক্তি                 | বর্ণনা                                                       |
+| ---------------- | ------------------------------- | ------------------------------------------------------------ |
+| Frontend (UI)    | Next.js 15 (App Router)         | SSR/ISR সহ গ্রাহক ও অ্যাডমিন UI                              |
+| Backend (API)    | Next.js API Routes              | Auth, Products, Categories, Orders CRUD                      |
+| Database ORM     | Drizzle ORM + mysql2            | Lightweight, prisma-free MySQL access                        |
+| Authentication   | NextAuth (Credentials provider) | JWT session strategy                                         |
+| Storage / Assets | `public/uploads`                | cPanel ফাইল ম্যানেজারে আপলোড করা ইমেজ                        |
+| Hosting          | cPanel Node.js Application      | `juicebar.hasanalicollege.com` সাবডোমেইনে রান হবে            |
+| DB (Production)  | MySQL (cPanel)                  | DB: `hasanali_juice_bar_db`, User: `hasanali_juice_bar_user` |
 
-## 🚀 Setup Instructions
+## 🚀 Environment Variables
 
-### 1. Environment Variables
-
-`.env` file তৈরি করুন এবং নিম্নলিখিত variables add করুন:
+লোকাল ডেভেলপমেন্টের জন্য `.env.local` ব্যবহার করুন, প্রোডাকশনের জন্য `.env.production` বা cPanel environment variables ব্যবহার করুন।
 
 ```env
-# Database - XAMPP Configuration
-DATABASE_URL="mysql://root:@localhost:3306/juice_bar_db"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
-
-# Upload
-UPLOAD_DIR="./public/uploads"
+# Common
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+NEXTAUTH_URL="http://localhost:3000"            # Production এ update দিন
+NEXTAUTH_SECRET="generate-a-long-secret"
+NEXTAUTH_TRUST_HOST=true
 ```
 
-### 2. Database Setup (XAMPP)
+**Production (cPanel) উদাহরণ:**  
+`DATABASE_URL="mysql://hasanali_juice_bar_user:YOUR_PASSWORD@localhost:3306/hasanali_juice_bar_db"`  
+`NEXTAUTH_URL="https://juicebar.hasanalicollege.com"`
 
-1. **XAMPP Start করুন:**
+## 💻 লোকাল (XAMPP) সেটআপ
 
-   - XAMPP Control Panel খুলুন
-   - Apache এবং MySQL start করুন
-   - phpMyAdmin এ যান: `http://localhost/phpmyadmin`
-
-2. **Database তৈরি করুন:**
-
-   - phpMyAdmin এ `juice_bar_db` নামে database তৈরি করুন
-   - Character set: `utf8mb4_unicode_ci`
-
-3. **Environment Variables:**
-
+1. **XAMPP চালু করুন** – Apache + MySQL start করুন
+2. **Database তৈরি করুন**
+   - phpMyAdmin → নতুন DB `juice_bar` (UTF8MB4)
+3. **Environment ফাইল**
    ```env
-   DATABASE_URL="mysql://root:@localhost:3306/juice_bar_db"
+   DATABASE_URL="mysql://root:@localhost:3306/juice_bar"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="local-secret"
    ```
-
-4. **Prisma Setup:**
-
+4. **Dependency + DB + Seed**
    ```bash
-   npx prisma migrate dev
-   npx prisma generate
+   npm install
+   npm run db:migrate   # drizzle-kit push
+   npm run db:seed      # admin user + sample data
    ```
-
-5. **Sample Data:**
+5. **ডেভ সার্ভার চালু করুন**
    ```bash
-   npm run db:seed
+   npm run dev
    ```
 
-### 3. File Structure
+## 📁 আপডেটেড ফাইল স্ট্রাকচার
 
 ```
+scripts/
+ ├─ seed.ts                   # Drizzle-based seed script
+ └─ create-cpanel-archive.ts  # Deployment ZIP generator
 src/
-├── app/
-│   ├── api/
-│   │   ├── auth/[...nextauth]/route.js    # NextAuth configuration
-│   │   ├── products/route.js              # Products CRUD API
-│   │   ├── products/[id]/route.js         # Single product API
-│   │   ├── categories/route.js           # Categories API
-│   │   └── upload/route.js                # Image upload API
-│   ├── admin/                             # Admin dashboard
-│   │   └── products/
-│   └── (menu)/menu/page.tsx               # Updated menu page
-├── components/
-│   └── admin/                             # Admin components
-│       ├── ProductForm.jsx
-│       └── ProductList.jsx
-├── hooks/
-│   ├── useProducts.js                     # SWR hooks for products
-│   └── useCategories.js                   # SWR hooks for categories
-└── lib/
-    ├── prisma.js                          # Prisma client
-    └── prisma.ts
+ ├─ app/                      # App Router pages + API routes
+ ├─ db/schema.ts              # Drizzle schema
+ └─ lib/db.ts                 # mysql2 + drizzle client
+drizzle.config.ts             # Drizzle configuration
+server.js                     # Custom Next server for cPanel
 ```
 
-### 4. Features Implemented
+## 🧪 অ্যাডমিন অ্যাক্সেস (Seed ডেটা থেকে)
 
-#### ✅ Database Schema
+- **Email:** `admin@juicebar.com`
+- **Password:** `admin123`
+- লগইন করার পরে `/admin` রুট থেকে অ্যাডমিন প্যানেল পাওয়া যাবে।
 
-- User management with NextAuth
-- Product and Category models
-- Order management system
-- Role-based access control
+## 📦 Deployment Overview (সংক্ষেপে)
 
-#### ✅ API Routes
-
-- `/api/products` - Product CRUD operations
-- `/api/categories` - Category management
-- `/api/upload` - Image upload functionality
-- `/api/auth/[...nextauth]` - Authentication
-
-#### ✅ Admin Dashboard
-
-- Product management interface
-- Category management
-- Image upload system
-- Role-based access control
-
-#### ✅ Frontend Integration
-
-- SWR for data fetching and caching
-- ISR (Incremental Static Regeneration)
-- Updated menu page with real API data
-- Responsive design maintained
-
-#### ✅ Performance Optimizations
-
-- SWR for client-side caching
-- Next.js ISR for server-side caching
-- Image optimization
-- Lazy loading
-
-### 5. Deployment to cPanel
-
-1. Build the project:
-
-```bash
-npm run build
-```
-
-2. Upload the following to cPanel:
-
-   - `.next` folder
-   - `public` folder
-   - `package.json`
-   - `next.config.ts`
-   - `prisma` folder
-
-3. Set up Node.js app in cPanel with:
-
-   - Start command: `npm start`
-   - Node version: 18+
-
-4. Configure environment variables in cPanel
-
-5. Set up MySQL database and update DATABASE_URL
-
-### 6. Database Migration
-
-Production এ deploy করার আগে database migrate করুন:
-
-```bash
-npx prisma migrate deploy
-```
-
-## 🔧 Development Commands
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Database operations
-npx prisma studio          # Database GUI
-npx prisma migrate dev      # Create migration
-npx prisma migrate deploy   # Apply migrations
-npx prisma generate         # Generate client
-```
-
-## 📱 Admin Access
-
-Admin dashboard access করতে:
-
-1. User account তৈরি করুন
-2. Database এ user role 'ADMIN' set করুন
-3. `/admin` route এ access করুন
-
-## 🎯 Next Steps
-
-1. Environment variables configure করুন
-2. Database setup করুন
-3. Test locally
-4. Deploy to cPanel
-5. Add sample data
-6. Configure CDN for images
-
-এই setup complete হলে আপনার Juice Bar application fully functional হবে MySQL database, authentication, admin panel এবং optimized performance সহ।
-
-## 🔧 XAMPP Troubleshooting
-
-### Common Issues:
-
-1. **MySQL Connection Error:**
-
+1. `npm run package:cpanel` চালিয়ে `dist/deploy/` ফোল্ডারে ZIP তৈরি করুন
+2. ZIP ফাইলটি cPanel এ `/home/hasanali/juicebar.hasanalicollege.com` ডিরেক্টরিতে আপলোড করে extract করুন
+3. `.env.production` বা cPanel Environment variables সেট করুন
+4. cPanel টার্মিনাল:
    ```bash
-   # Check if MySQL is running in XAMPP
-   # Default port: 3306
-   # Username: root
-   # Password: (empty)
+   cd ~/juicebar.hasanalicollege.com
+   npm install
+   npm run db:migrate         # Drizzle schema apply
+   npm run db:seed            # প্রথমবারের জন্য
+   npm run build              # যদি ZIP এ build না থাকে
    ```
+5. Node.js অ্যাপ সেটআপ (startup file `server.js`)
+6. App restart করে ডোমেইনে গিয়ে টেস্ট করুন
 
-2. **Database Not Found:**
+## 🔧 সাধারণ কমান্ডসমূহ
 
-   - phpMyAdmin এ `juice_bar_db` database তৈরি করুন
-   - Character set: `utf8mb4_unicode_ci`
+| কাজ                        | কমান্ড                   |
+| -------------------------- | ------------------------ |
+| Dependency install         | `npm install`            |
+| Dev server                 | `npm run dev`            |
+| Production build           | `npm run build`          |
+| Start server (production)  | `npm run start`          |
+| Drizzle migrate (prod/dev) | `npm run db:migrate`     |
+| Seed data                  | `npm run db:seed`        |
+| Create cPanel ZIP          | `npm run package:cpanel` |
 
-3. **Prisma Connection Issues:**
+## 🛠️ Troubleshooting (XAMPP)
 
-   ```bash
-   # Test connection
-   npx prisma db pull
+- **MySQL connection error:** DATABASE_URL ঠিক আছে কিনা দেখুন, MySQL চালু আছে কিনা দেখুন
+- **Migration ব্যর্থ:** `npm run db:migrate -- --force` (প্রয়োজনে), লগ দেখা দরকার হলে `drizzle` আউটপুট দেখুন
+- **Seed ব্যর্থ:** DB schema আপডেট আছে কিনা যাচাই করুন, duplicate data থাকলে পুরোনো রেকর্ড মুছে দিন
+- **Port conflict:** `server.js` এ `PORT` env দিয়ে নতুন port সেট করুন
 
-   # If successful, run migrations
-   npx prisma migrate dev
-   ```
+## ✅ চেকলিস্ট
 
-4. **Port Conflicts:**
-   - XAMPP MySQL: Port 3306
-   - Next.js: Port 3000
-   - Make sure both are available
+- [x] `.env.local` সেট করা
+- [x] `npm run db:migrate` চালানো
+- [x] `npm run db:seed` (প্রথমবার)
+- [x] `npm run dev` অথবা `npm run build && npm run start`
+- [x] Deployment এর আগে `npm run package:cpanel` চালিয়ে আর্কাইভ প্রস্তুত করা
 
-### Quick Setup Commands:
-
-```bash
-# 1. Create .env file with XAMPP config
-echo 'DATABASE_URL="mysql://root:@localhost:3306/juice_bar_db"' > .env
-echo 'NEXTAUTH_URL="http://localhost:3000"' >> .env
-echo 'NEXTAUTH_SECRET="your-secret-key-here"' >> .env
-
-# 2. Install dependencies
-npm install
-
-# 3. Setup database
-npx prisma migrate dev
-npx prisma generate
-
-# 4. Add sample data
-npm run db:seed
-
-# 5. Start development
-npm run dev
-```
-
-### Admin Access:
-
-- URL: `http://localhost:3000/admin`
-- Email: `admin@juicebar.com`
-- Password: `admin123`
+সবকিছু ঠিক থাকলে আপনি লোকাল ও প্রোডাকশন—দুই জায়গাতেই স্মুথলি কাজ করতে পারবেন। শুভকামনা! 🚀
