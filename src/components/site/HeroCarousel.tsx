@@ -12,7 +12,17 @@ interface Banner {
   text?: string | null;
   description?: string | null;
   order?: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
+
+// Helper function to add cache-busting query parameter
+const getCacheBustedImageUrl = (imageUrl: string, updatedAt: Date | string): string => {
+  if (!imageUrl) return imageUrl;
+  const timestamp = new Date(updatedAt).getTime();
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}v=${timestamp}`;
+};
 
 export function HeroCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -32,14 +42,6 @@ export function HeroCarousel() {
         setBanners(sortedBanners);
       } catch (error) {
         console.error("Error fetching banners:", error);
-        // Use fallback banners if API fails
-        setBanners([
-          {
-            id: "fallback-1",
-            image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200",
-            text: "Welcome to Friends Juice Bar",
-          },
-        ]);
       } finally {
         setLoading(false);
       }
@@ -93,7 +95,10 @@ export function HeroCarousel() {
             <div className="min-w-0 flex-[0_0_100%]" key={banner.id}>
               <div className="relative h-48 md:h-80 w-full">
                 <Image
-                  src={banner.image || "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200"}
+                  src={getCacheBustedImageUrl(
+                    banner.image,
+                    banner.updatedAt
+                  )}
                   alt={banner.text || "Banner"}
                   fill
                   className="object-cover"

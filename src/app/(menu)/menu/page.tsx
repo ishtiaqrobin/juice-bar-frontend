@@ -114,7 +114,7 @@ const ProductImage = ({
         alt={alt}
         width={width}
         height={height}
-        className={`${className} transition-all duration-500 ease-in-out ${isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        className={`${className} transition-all duration-500 ease-in  ${isLoading ? 'opacity-0 scale-' : 'opacity-100 scale-'
           }`}
         onLoadingComplete={() => setIsLoading(false)}
         loading="lazy"
@@ -658,7 +658,7 @@ export default function MenuPage(): JSX.Element {
                       <div key={card}>
                         {/* Mobile: Horizontal layout */}
                         <div className="flex sm:hidden flex-row gap-4">
-                          <Skeleton className="h-[100px] w-[100px] rounded-lg flex-shrink-0" />
+                          <Skeleton className="mx-2.5 h-[100px] w-[100px] rounded-lg flex-shrink-0" />
                           <div className="flex-1 space-y-2">
                             <Skeleton className="h-5 w-full" />
                             <Skeleton className="h-4 w-16" />

@@ -30,6 +30,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,10 +103,17 @@ function AdminSidebarContent() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const handleSignOut = async () => {
     await logout();
     router.push("/");
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (
@@ -141,7 +149,7 @@ function AdminSidebarContent() {
                     isActive={pathname === item.url}
                     tooltip={item.title}
                   >
-                    <Link href={item.url}>
+                    <Link href={item.url} onClick={handleLinkClick}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -158,7 +166,7 @@ function AdminSidebarContent() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Add New Product">
-                  <Link href="/admin/products/new">
+                  <Link href="/admin/products/new" onClick={handleLinkClick}>
                     <Package className="h-4 w-4" />
                     <span>Add Product</span>
                   </Link>
@@ -166,7 +174,7 @@ function AdminSidebarContent() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="View Reports">
-                  <Link href="/admin/reports">
+                  <Link href="/admin/reports" onClick={handleLinkClick}>
                     <FileText className="h-4 w-4" />
                     <span>Generate Report</span>
                   </Link>

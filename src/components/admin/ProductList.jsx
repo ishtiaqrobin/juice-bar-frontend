@@ -105,8 +105,8 @@ const ProductImage = ({ src, alt, className }) => {
         alt={alt}
         width={300}
         height={300}
-        className={`${className} transition-all duration-500 ease-in-out ${
-          isLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        className={`${className} transition-all duration-500 ease-in ${
+          isLoading ? "opacity-0 scale-" : "opacity-100 scale-"
         }`}
         onLoadingComplete={() => setIsLoading(false)}
         loading="lazy"

@@ -637,7 +637,8 @@ export default function BannersPage() {
               onClick={saveEdit}
               disabled={!editingId || savingId === editingId || !editForm.image}
             >
-              {savingId === editingId ? "Saving..." : "Save"}
+              Update Banner
+              {/* {savingId === editingId ? "Saving..." : "Save"} */}
             </Button>
           </DialogFooter>
         </DialogContent>

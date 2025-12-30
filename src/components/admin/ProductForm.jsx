@@ -489,7 +489,7 @@ export default function ProductForm({ product }) {
               type="submit"
               disabled={isLoading}
             >
-              {product ? "Update" : "Create"} Product
+              {product ? "Update Product" : "Add Product"}
             </Button>
           </div>
         </form>
