@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export default function ChangePassword() {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -144,6 +145,12 @@ export default function ChangePassword() {
                         >
                             {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                         </button>
+                    </div>
+
+                    <div className="flex justify-end">
+                        <Link href="/forgot-password" className="text-sm text-primary">
+                            Forgot Password?
+                        </Link>
                     </div>
                 </div>
 

@@ -215,10 +215,10 @@ export default function ProductForm({ product }) {
 
       if (product) {
         await api.products.update(product.id, submitData);
-        toast.success("Product updated successfully!");
+        toast.success("Product updated successfully");
       } else {
         await api.products.create(submitData);
-        toast.success("Product created successfully!");
+        toast.success("Product created successfully");
       }
       router.push("/admin/products");
     } catch (error) {

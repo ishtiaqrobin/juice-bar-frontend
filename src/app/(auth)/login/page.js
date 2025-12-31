@@ -22,6 +22,17 @@ export default function LoginPage() {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        // For phone input, allow only digits and limit to 11 characters
+        if (name === "phone") {
+            const digitsOnly = value.replace(/\D/g, ''); // Remove all non-digit characters
+            setFormData((prev) => ({
+                ...prev,
+                [name]: digitsOnly.slice(0, 11), // Limit to 11 digits
+            }));
+            return;
+        }
+
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
@@ -100,6 +111,10 @@ export default function LoginPage() {
                                         className="flex-1"
                                         value={formData.phone}
                                         onChange={handleInputChange}
+                                        maxLength={11}
+                                        minLength={11}
+                                        pattern="[0-9]{11}"
+                                        title="Please enter exactly 11 digits"
                                         required
                                     />
                                 </div>
@@ -138,7 +153,7 @@ export default function LoginPage() {
                             </button>
                         </div>
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 ml-0.5">
                                 <input
                                     type="checkbox"
                                     id="rememberMe"

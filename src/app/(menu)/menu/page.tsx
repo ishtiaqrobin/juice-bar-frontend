@@ -699,7 +699,7 @@ export default function MenuPage(): JSX.Element {
                       >
                         <CardContent className="flex flex-row sm:flex-col gap-4 sm:gap-0">
                           <div className="relative">
-                            <ProductImage
+                            <Image
                               src={getCacheBustedImageUrl(item.image, item.updatedAt)}
                               alt={item.name}
                               width={220}
@@ -708,7 +708,7 @@ export default function MenuPage(): JSX.Element {
                                 }`}
                             />
                             {item.stock <= 0 && (
-                              <ProductImage
+                              <Image
                                 src={getCacheBustedImageUrl(item.image, item.updatedAt)}
                                 alt={item.name}
                                 width={220}

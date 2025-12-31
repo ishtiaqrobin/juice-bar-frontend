@@ -50,10 +50,19 @@ export default function UsersPage() {
     const [savingId, setSavingId] = React.useState(null);
     const [deleting, setDeleting] = React.useState({ open: false, userId: null, name: '' });
 
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        // Allow only digits and limit to 11 characters
+        const digitsOnly = value.replace(/\D/g, ''); // Remove all non-digit characters
+        setEditForm((p) => ({ ...p, phone: digitsOnly.slice(0, 11) })); // Limit to 11 digits
+    };
+
 
     const startEdit = (user) => {
         setEditingId(user.id);
-        setEditForm({ name: user.name || '', phone: user.phone || '', role: user.role || 'USER' });
+        // Strip +88 from phone number for display
+        const phoneDisplay = user.phone ? user.phone.replace(/^\+88/, '') : '';
+        setEditForm({ name: user.name || '', phone: phoneDisplay, role: user.role || 'USER' });
         setEditOpen(true);
     };
 
@@ -64,10 +73,21 @@ export default function UsersPage() {
     };
 
     const saveEdit = async (userId) => {
+        // Validate phone number has exactly 11 digits
+        if (editForm.phone && editForm.phone.length !== 11) {
+            toast.error('Phone number must be exactly 11 digits');
+            return;
+        }
+
         setSavingId(userId);
         try {
-            await api.users.update(userId, editForm);
-            toast.success('User updated');
+            // Add +88 to phone number if it doesn't already have it
+            const phoneToSend = editForm.phone && !editForm.phone.startsWith('+88')
+                ? '+88' + editForm.phone
+                : editForm.phone;
+
+            await api.users.update(userId, { ...editForm, phone: phoneToSend });
+            toast.success('User updated successfully');
             cancelEdit();
             fetchUsers();
         } catch (e) {
@@ -85,7 +105,7 @@ export default function UsersPage() {
         if (!deleting.userId) return;
         try {
             await api.users.delete(deleting.userId);
-            toast.success('User deleted');
+            toast.success('User deleted successfully');
             cancelDelete();
             fetchUsers();
         } catch (e) {
@@ -293,6 +313,7 @@ export default function UsersPage() {
                 </div>
             </div>
 
+            {/* Delete User */}
             <AlertDialog open={deleting.open} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -308,6 +329,7 @@ export default function UsersPage() {
                 </AlertDialogContent>
             </AlertDialog>
 
+            {/* Edit User */}
             <Dialog open={editOpen} onOpenChange={(open) => { if (!open) cancelEdit(); }}>
                 <DialogContent>
                     <DialogHeader>
@@ -329,9 +351,35 @@ export default function UsersPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <label className="text-sm font-medium text-gray-800">Phone</label>
-                            <Input value={editForm.phone} onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))} className="bg-white" />
+                            <Input
+                                value={editForm.phone}
+                                onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
+                                className="bg-white"
+                            />
+                        </div> */}
+
+                        <div className="grid gap-2">
+                            <div className="flex gap-2">
+                                <div className="w-20">
+                                    <Input id="countryCode" type="text" value="+88" readOnly />
+                                </div>
+                                <Input
+                                    id="phone"
+                                    name="phone"
+                                    type="tel"
+                                    placeholder="01XXXXXXXXX"
+                                    className="flex-1"
+                                    value={editForm.phone}
+                                    onChange={handlePhoneChange}
+                                    maxLength={11}
+                                    minLength={11}
+                                    pattern="[0-9]{11}"
+                                    title="Please enter exactly 11 digits"
+                                    required
+                                />
+                            </div>
                         </div>
 
                     </div>
@@ -340,7 +388,7 @@ export default function UsersPage() {
                             Cancel
                         </Button>
                         <Button className="hover:cursor-pointer" onClick={() => saveEdit(editingId)} disabled={!editingId || savingId === editingId}>
-                            Save
+                            Update
                         </Button>
                     </DialogFooter>
                 </DialogContent>

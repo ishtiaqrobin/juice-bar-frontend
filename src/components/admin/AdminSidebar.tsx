@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
-  ChevronDown,
+  // ChevronDown,
   Home,
   Package,
   Settings,
@@ -35,6 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -131,9 +132,9 @@ function AdminSidebarContent() {
               {organization.type}
             </span>
           </div>
-          <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
+          {/* <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
             <ChevronDown className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       </SidebarHeader>
 
@@ -186,28 +187,36 @@ function AdminSidebarContent() {
       </SidebarContent>
 
       <SidebarFooter className="border-y">
-        <div className="flex items-center gap-3 px-4 py-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={user?.image || ""}
-              alt={user?.name || ""}
-            />
-            <AvatarFallback>
-              {user?.name?.charAt(0) || ""}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-sm font-medium truncate">
-              {user?.name || ""}
-            </span>
-            <span className="text-xs text-muted-foreground truncate">
-              {user?.email || ""}
-            </span>
+        {/* User Information */}
+        {!user ? (
+          <div className="flex items-center gap-3 px-4 py-2">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="flex flex-col flex-1 min-w-0 gap-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-36" />
+            </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-6 w-6">
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </div>
+        ) : (
+          <div className="flex items-center gap-3 px-4 py-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={user?.image || ""}
+                alt={user?.name || ""}
+              />
+              <AvatarFallback>
+                {user?.name?.charAt(0) || ""}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-sm font-medium truncate">
+                {user?.name || ""}
+              </span>
+              <span className="text-xs text-muted-foreground truncate">
+                {user?.email || ""}
+              </span>
+            </div>
+          </div>
+        )}
         <Separator />
         <div className="px-4 py-2">
           <Button

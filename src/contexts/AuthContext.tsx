@@ -90,7 +90,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 router.push("/");
             }
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Invalid Credentials!";
+            // Extract error message from API client error object
+            // API client returns { message, status, data } structure
+            const errorMessage =
+                (error as { message?: string })?.message ||
+                "Invalid Credentials!";
             toast.error(errorMessage);
             // Don't throw error - just show toast and stay on page
         } finally {
@@ -123,7 +127,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             router.push("/");
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Registration failed";
+            // Extract error message from API client error object
+            // API client returns { message, status, data } structure
+            const errorMessage =
+                (error as { message?: string })?.message ||
+                "Registration failed";
             toast.error(errorMessage);
             throw error;
         } finally {

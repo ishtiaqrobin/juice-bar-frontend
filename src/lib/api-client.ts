@@ -85,6 +85,12 @@ export const api = {
 
     changePassword: (data: { oldPassword: string; newPassword: string }) =>
       apiClient.put("/auth/change-password", data),
+
+    forgotPassword: (email: string) =>
+      apiClient.post("/auth/forgot-password", { email }),
+
+    resetPassword: (data: { token: string; newPassword: string }) =>
+      apiClient.post("/auth/reset-password", data),
   },
 
   // Product endpoints
