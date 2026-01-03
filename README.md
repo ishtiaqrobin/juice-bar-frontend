@@ -5,7 +5,7 @@ Next.js 15 (App Router) based admin + customer experience for Friends Juice Bar.
 - **Database access:** Drizzle ORM + mysql2
 - **Authentication:** NextAuth (Credentials provider)
 - **UI:** Tailwind-based design system with Radix primitives
-- **Deployment targets:** Local (XAMPP) and cPanel Node.js hosting
+- **Deployment targets:** Local (XAMPP), cPanel Node.js hosting, and Vercel
 
 All Prisma dependencies and schema files have been removed in favour of Drizzle to keep the runtime lightweight for shared hosting.
 
@@ -54,6 +54,7 @@ The following markdown files contain detailed deployment instructions (Bangla + 
 - `README_SETUP.md` – Tech stack, environment variables, and local setup guide
 - `DEPLOY_INSTRUCTIONS.md` – Step-by-step cPanel deployment walkthrough
 - `QUICK_DEPLOY.md` – Bangla quick-reference for repeating deployments
+- `VERCEL_DEPLOY.md` – **Vercel deployment guide (Bangla)** 🚀
 
 Always review and keep those files updated when the deployment process changes.
 
