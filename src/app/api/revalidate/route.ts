@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
     const { tag, path } = body;
 
     // Revalidate by tag (recommended)
+    // Using "max" profile for stale-while-revalidate semantics (Next.js 16+)
     if (tag) {
-      revalidateTag(tag);
+      revalidateTag(tag, "max");
       console.log(`✅ Cache revalidated for tag: ${tag}`);
 
       return NextResponse.json({
