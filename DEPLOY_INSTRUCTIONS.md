@@ -19,7 +19,7 @@
 ## 1️⃣ লোকাল প্রিপারেশন
 
 ```bash
-npm install
+npm install            # ডিভলপার মেশিনে
 npm run db:migrate     # ডাটাবেস স্কিমা নিশ্চিত করুন
 npm run db:seed        # প্রথমবার deploy করার আগে sample data
 npm run package:cpanel # dist/deploy/ তে ZIP তৈরি হবে
