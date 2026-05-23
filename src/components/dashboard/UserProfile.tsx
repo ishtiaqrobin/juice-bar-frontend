@@ -7,8 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api-client";
+import { useAuth } from "@/hooks/useAuth";
+import { userService } from "@/services";
+import { uploadImage, UPLOAD_CONSTRAINTS } from "@/lib/upload-image";
 
 interface FormData {
   name: string;
@@ -20,6 +21,7 @@ export default function UserProfileComponent() {
   const { user, isLoading: loading, updateUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadPending, setUploadPending] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -33,7 +35,7 @@ export default function UserProfileComponent() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
-        phone: user.phone || "",
+        phone: user.phone?.startsWith("+88") ? user.phone.slice(3) : user.phone || "",
       });
       if (user.image) {
         setProfileImage(user.image);
@@ -47,34 +49,24 @@ export default function UserProfileComponent() {
       <div className="border rounded-lg p-6 space-y-4">
         <Skeleton className="h-7 w-48" />
         <div className="space-y-6">
-          {/* Profile Image Skeleton */}
           <div className="flex flex-col items-center space-y-4">
             <Skeleton className="w-32 h-32 rounded-full" />
             <Skeleton className="h-10 w-[195px]" />
           </div>
-
-          {/* Form Fields Skeleton */}
           <div className="space-y-4">
-            {/* Name Field */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-10 w-full" />
             </div>
-
-            {/* Email Field */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-16" />
               <Skeleton className="h-10 w-full" />
             </div>
-
-            {/* Phone Field */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-10 w-full" />
             </div>
           </div>
-
-          {/* Button Skeleton */}
           <Skeleton className="h-10 w-full" />
         </div>
       </div>
@@ -95,37 +87,49 @@ export default function UserProfileComponent() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    // For phone number, only allow digits
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length <= 11) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: digitsOnly,
+        }));
+      }
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const response = await api.upload.profile(file);
-        setProfileImage(response.data.data.url);
-        toast.success("Profile image uploaded successfully!");
-      } catch {
-        toast.error("Failed to upload image. Please try again.");
-      }
-    }
+    setUploadPending(true);
+    uploadImage(file, {
+      endpoint: "profile",
+      onSuccess: (url) => setProfileImage(url),
+      inputRef: e.target,
+    }).finally(() => setUploadPending(false));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Format phone with +88 prefix for backend
+    const formattedPhone = formData.phone ? `+88${formData.phone}` : "";
+
     try {
-      const response = await api.users.updateProfile({
+      const response = await userService.updateProfile({
         ...formData,
+        phone: formattedPhone,
         image: profileImage || undefined,
       });
 
       // Update user in AuthContext with fresh data from backend
-      updateUser(response.data.data);
+      await updateUser(response.data);
 
       toast.success("Profile updated successfully!");
     } catch {
@@ -160,8 +164,9 @@ export default function UserProfileComponent() {
             </div>
             <Input
               type="file"
-              accept="image/*"
+              accept={UPLOAD_CONSTRAINTS.ACCEPT}
               onChange={handleImageChange}
+              disabled={uploadPending}
               className="max-w-[195px]"
             />
           </div>
@@ -183,31 +188,43 @@ export default function UserProfileComponent() {
           {/* Email */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              Email <span className="text-xs text-gray-500">(Not Editable)</span>
             </label>
             <Input
               id="email"
               name="email"
               type="email"
               value={formData.email}
+              disabled
               onChange={handleInputChange}
               required={!formData.phone}
             />
           </div>
 
-          {/* Phone */}
-          <div className="space-y-2">
+          {/* Phone Number with +88 prefix */}
+          <div className="grid gap-2">
             <label htmlFor="phone" className="text-sm font-medium">
               Phone Number
             </label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required={!formData.email}
-            />
+            <div className="flex gap-2">
+              <div className="w-20">
+                <Input id="countryCode" type="text" value="+88" readOnly className="text-center" />
+              </div>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="01XXXXXXXXX"
+                className="flex-1"
+                value={formData.phone}
+                onChange={handleInputChange}
+                maxLength={11}
+                minLength={11}
+                pattern="[0-9]{11}"
+                title="Please enter exactly 11 digits"
+                required
+              />
+            </div>
           </div>
         </div>
 

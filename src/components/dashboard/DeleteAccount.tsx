@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api-client";
-import { useAuth } from "@/contexts/AuthContext";
+import { userService } from "@/services";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DeleteAccount() {
     const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function DeleteAccount() {
         setIsLoading(true);
 
         try {
-            await api.users.deleteAccount();
+            await userService.deleteAccount();
 
             toast.success("Account deleted successfully");
 

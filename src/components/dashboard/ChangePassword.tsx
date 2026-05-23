@@ -4,7 +4,7 @@ import React, { useState, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { api } from "@/lib/api-client";
+import { userService } from "@/services";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
@@ -44,7 +44,7 @@ export default function ChangePassword() {
         setIsLoading(true);
 
         try {
-            await api.auth.changePassword({
+            await userService.changePassword({
                 oldPassword: formData.oldPassword,
                 newPassword: formData.newPassword,
             });

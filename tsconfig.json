@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -37,9 +37,9 @@
     "src/app/(home-layout)/contact/page.js",
     "src/app/other/other/page.js",
     "src/app/(home-layout)/promotions/page.js",
-    "src/app/layout.js",
+    "src/app/layout.tsx",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/app/(dashboardLayout)/@admin/admin-dashboard/featured/page.jsx", "src/components/admin/ProductList.jsx"  ],
   "exclude": [
     "node_modules"
   ]
