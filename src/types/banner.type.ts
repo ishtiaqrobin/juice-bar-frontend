@@ -3,7 +3,6 @@ export interface Banner {
   text: string;
   description: string | null;
   image: string;
-  link: string | null;
   isActive: boolean;
   order: number;
   createdAt: string;
@@ -11,19 +10,19 @@ export interface Banner {
 }
 
 export interface CreateBannerData {
-  text: string;
+  text?: string;
   description?: string | null;
-  image: string;
-  link?: string | null;
+  image?: string;
   isActive?: boolean;
   order?: number;
+  imageFile?: File;
 }
 
 export interface UpdateBannerData {
   text?: string;
   description?: string | null;
   image?: string;
-  link?: string | null;
   isActive?: boolean;
   order?: number;
+  imageFile?: File;
 }

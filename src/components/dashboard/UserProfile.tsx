@@ -9,7 +9,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { userService } from "@/services";
-import { uploadImage, UPLOAD_CONSTRAINTS } from "@/lib/upload-image";
+
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+] as const;
+const ACCEPT_TYPES = "image/jpeg,image/jpg,image/png,image/webp";
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 interface FormData {
   name: string;
@@ -21,8 +30,8 @@ export default function UserProfileComponent() {
   const { user, isLoading: loading, updateUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadPending, setUploadPending] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -35,7 +44,9 @@ export default function UserProfileComponent() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
-        phone: user.phone?.startsWith("+88") ? user.phone.slice(3) : user.phone || "",
+        phone: user.phone?.startsWith("+88")
+          ? user.phone.slice(3)
+          : user.phone || "",
       });
       if (user.image) {
         setProfileImage(user.image);
@@ -106,12 +117,30 @@ export default function UserProfileComponent() {
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    setUploadPending(true);
-    uploadImage(file, {
-      endpoint: "profile",
-      onSuccess: (url) => setProfileImage(url),
-      inputRef: e.target,
-    }).finally(() => setUploadPending(false));
+    if (!file) return;
+
+    // Validate file type
+    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      const readable = ALLOWED_TYPES.map((t) =>
+        t.replace("image/", "").toUpperCase(),
+      ).join(", ");
+      toast.error(`Only ${readable} images are allowed`);
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_SIZE_BYTES) {
+      const currentMB = (file.size / 1024 / 1024).toFixed(1);
+      toast.error(
+        `Image must be smaller than ${MAX_SIZE_MB} MB (current: ${currentMB})`,
+      );
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setImageFile(file);
+    setProfileImage(previewUrl);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -125,7 +154,7 @@ export default function UserProfileComponent() {
       const response = await userService.updateProfile({
         ...formData,
         phone: formattedPhone,
-        image: profileImage || undefined,
+        ...(imageFile && { imageFile }),
       });
 
       // Update user in AuthContext with fresh data from backend
@@ -164,11 +193,16 @@ export default function UserProfileComponent() {
             </div>
             <Input
               type="file"
-              accept={UPLOAD_CONSTRAINTS.ACCEPT}
+              accept={ACCEPT_TYPES}
               onChange={handleImageChange}
-              disabled={uploadPending}
+              disabled={isLoading}
               className="max-w-[195px]"
             />
+            {!profileImage && (
+              <p className="text-xs text-gray-500">
+                Max size: {MAX_SIZE_MB} MB. Formats: JPEG, PNG, WebP
+              </p>
+            )}
           </div>
 
           {/* Name */}
@@ -188,7 +222,8 @@ export default function UserProfileComponent() {
           {/* Email */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email <span className="text-xs text-gray-500">(Not Editable)</span>
+              Email{" "}
+              <span className="text-xs text-gray-500">(Not Editable)</span>
             </label>
             <Input
               id="email"
@@ -208,7 +243,13 @@ export default function UserProfileComponent() {
             </label>
             <div className="flex gap-2">
               <div className="w-20">
-                <Input id="countryCode" type="text" value="+88" readOnly className="text-center" />
+                <Input
+                  id="countryCode"
+                  type="text"
+                  value="+88"
+                  readOnly
+                  className="text-center"
+                />
               </div>
               <Input
                 id="phone"

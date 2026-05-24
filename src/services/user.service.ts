@@ -7,6 +7,7 @@ interface UpdateProfileData {
   email?: string;
   phone?: string;
   image?: string;
+  imageFile?: File;
 }
 
 interface ChangePasswordData {
@@ -48,8 +49,37 @@ class UserService {
     }
   }
 
-  async updateProfile(data: UpdateProfileData): Promise<ApiResponse<User>> {
+  async updateProfile(
+    data: UpdateProfileData & { imageFile?: File },
+  ): Promise<ApiResponse<User>> {
     try {
+      // If there's an image file, use FormData for multipart upload (Cloudinary)
+      if (data.imageFile) {
+        const formData = new FormData();
+        formData.append("image", data.imageFile);
+        if (data.name !== undefined) formData.append("name", data.name);
+        if (data.email !== undefined) formData.append("email", data.email);
+        if (data.phone !== undefined) formData.append("phone", data.phone);
+
+        const response = await fetch(API_ENDPOINTS.USERS.UPDATE_PROFILE, {
+          method: "PUT",
+          body: formData,
+          credentials: "include",
+        });
+
+        const jsonData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(jsonData.message || "Request failed");
+        }
+
+        return {
+          ...jsonData,
+          message: "Profile updated successfully",
+        };
+      }
+
+      // Otherwise, send JSON
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.USERS.UPDATE_PROFILE,
         {

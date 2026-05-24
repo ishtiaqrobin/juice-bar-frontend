@@ -16,13 +16,18 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-import {
-  Banner,
-  CreateBannerData,
-  UpdateBannerData,
-} from "@/types/banner.type";
+import { Banner } from "@/types/banner.type";
 import { createBanner, updateBanner } from "@/actions/banner.action";
-import { uploadImage, UPLOAD_CONSTRAINTS } from "@/lib/upload-image";
+
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+] as const;
+const ACCEPT_TYPES = "image/jpeg,image/jpg,image/png,image/webp";
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 interface BannerDialogProps {
   open: boolean;
@@ -32,8 +37,18 @@ interface BannerDialogProps {
   onSuccess?: () => void;
 }
 
-const emptyForm = {
-  image: "",
+interface FormState {
+  imageFile: File | null;
+  imagePreview: string; // Data URL or existing image URL
+  text: string;
+  description: string;
+  isActive: boolean;
+  order: number;
+}
+
+const emptyForm: FormState = {
+  imageFile: null,
+  imagePreview: "",
   text: "",
   description: "",
   isActive: true,
@@ -47,16 +62,16 @@ export default function BannerDialog({
   mode,
   onSuccess,
 }: BannerDialogProps) {
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Sync form when mode/banner changes
   useEffect(() => {
     if (open) {
       if (mode === "edit" && banner) {
         setForm({
-          image: banner.image || "",
+          imageFile: null,
+          imagePreview: banner.image || "",
           text: banner.text || "",
           description: banner.description || "",
           isActive: banner.isActive !== false,
@@ -69,23 +84,56 @@ export default function BannerDialog({
   }, [open, mode, banner]);
 
   const handleClose = () => {
+    // Clean up object URLs
+    if (form.imagePreview.startsWith("blob:") && form.imageFile) {
+      URL.revokeObjectURL(form.imagePreview);
+    }
     setForm(emptyForm);
     onOpenChange(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    setUploadingImage(true);
-    uploadImage(file, {
-      endpoint: "banner",
-      onSuccess: (url) => setForm((prev) => ({ ...prev, image: url })),
-      inputRef: e.target,
-    }).finally(() => setUploadingImage(false));
+    if (!file) return;
+
+    // Validate file type
+    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      const readable = ALLOWED_TYPES.map((t) =>
+        t.replace("image/", "").toUpperCase(),
+      ).join(", ");
+      toast.error(`Only ${readable} images are allowed`);
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_SIZE_BYTES) {
+      const currentMB = (file.size / 1024 / 1024).toFixed(1);
+      toast.error(
+        `Image must be smaller than ${MAX_SIZE_MB} MB (current: ${currentMB})`,
+      );
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+
+    // Clean up old preview if it was a blob URL
+    if (form.imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(form.imagePreview);
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      imageFile: file,
+      imagePreview: previewUrl,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.image.trim()) {
+
+    // Validate image: either new file or existing image URL
+    if (!form.imageFile && !form.imagePreview) {
       toast.error("Banner image is required");
       return;
     }
@@ -97,12 +145,12 @@ export default function BannerDialog({
 
     try {
       if (mode === "add") {
-        const payload: CreateBannerData = {
-          image: form.image.trim(),
+        const payload = {
           text: form.text?.trim() || "",
           description: form.description?.trim() || null,
           isActive: form.isActive,
           order: Number(form.order) || 0,
+          ...(form.imageFile && { imageFile: form.imageFile }),
         };
         const res = await createBanner(payload);
         if (res.error) {
@@ -112,14 +160,25 @@ export default function BannerDialog({
         toast.success("Banner created successfully", { id: toastId });
       } else {
         if (!banner?.id) return;
-        const payload: UpdateBannerData = {
-          image: form.image.trim(),
-          isActive: form.isActive,
-          order: Number(form.order) || 0,
+        const payload = {
+          ...(form.text !== banner.text && { text: form.text?.trim() || "" }),
+          ...(form.description !== banner.description && {
+            description: form.description?.trim() || null,
+          }),
+          ...(form.isActive !== banner.isActive && { isActive: form.isActive }),
+          ...(form.order !== banner.order && {
+            order: Number(form.order) || 0,
+          }),
+          ...(form.imageFile && { imageFile: form.imageFile }),
         };
-        if (form.text) payload.text = form.text.trim();
-        if (form.description !== undefined)
-          payload.description = form.description?.trim() || null;
+
+        // Only send if there are changes
+        if (Object.keys(payload).length === 0) {
+          toast.info("No changes to save", { id: toastId });
+          setSaving(false);
+          return;
+        }
+
         const res = await updateBanner(banner.id, payload);
         if (res.error) {
           toast.error(res.error.message, { id: toastId });
@@ -161,18 +220,18 @@ export default function BannerDialog({
             </label>
             <Input
               type="file"
-              accept={UPLOAD_CONSTRAINTS.ACCEPT}
-              onChange={handleImageUpload}
+              accept={ACCEPT_TYPES}
+              onChange={handleImageChange}
               className="bg-white"
-              disabled={uploadingImage}
+              disabled={saving}
             />
-            {uploadingImage && (
-              <p className="text-sm text-gray-500">Uploading image...</p>
-            )}
-            {form.image && (
+            <p className="text-xs text-gray-500">
+              Max size: {MAX_SIZE_MB} MB. Formats: JPEG, PNG, WebP
+            </p>
+            {form.imagePreview && (
               <div className="relative w-full h-32 rounded overflow-hidden mt-2">
                 <Image
-                  src={form.image}
+                  src={form.imagePreview}
                   alt="Banner preview"
                   fill
                   className="object-cover"
@@ -191,6 +250,7 @@ export default function BannerDialog({
               onChange={(e) => setForm((p) => ({ ...p, text: e.target.value }))}
               className="bg-white"
               placeholder="Optional offer text (e.g., '50% Off')"
+              disabled={saving}
             />
           </div>
 
@@ -210,6 +270,7 @@ export default function BannerDialog({
               className="bg-white"
               placeholder="Optional description"
               rows={3}
+              disabled={saving}
             />
           </div>
 
@@ -228,6 +289,7 @@ export default function BannerDialog({
               }
               className="bg-white"
               placeholder="0"
+              disabled={saving}
             />
             <p className="text-xs text-gray-500">Lower numbers appear first</p>
           </div>
@@ -263,7 +325,7 @@ export default function BannerDialog({
             <Button
               type="submit"
               className="hover:cursor-pointer"
-              disabled={saving || !form.image || uploadingImage}
+              disabled={saving || !form.imagePreview}
             >
               {saving
                 ? isEdit

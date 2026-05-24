@@ -42,7 +42,9 @@ export const getProductsPaginated = async (
 
 // ─── Mutation actions (ProductList: toggle / delete) ──────────────────────────
 
-export const createProduct = async (productData: CreateProductData) => {
+export const createProduct = async (
+  productData: CreateProductData & { imageFile?: File },
+) => {
   try {
     const res = await productService.createProduct(productData);
     revalidateTag("products", "max");
@@ -60,7 +62,7 @@ export const createProduct = async (productData: CreateProductData) => {
 
 export const updateProduct = async (
   id: string,
-  productData: UpdateProductData,
+  productData: UpdateProductData & { imageFile?: File },
 ) => {
   try {
     const res = await productService.updateProduct(id, productData);

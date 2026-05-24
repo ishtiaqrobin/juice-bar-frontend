@@ -27,6 +27,12 @@ export interface CreateProductData {
   categoryId?: string;
   featured?: string | null;
   isActive?: boolean;
+  stock?: number;
+  unitType?: string;
+  addedDate?: string;
+  discountPrice?: number | null;
+  discountPercentage?: number | null;
+  imageFile?: File;
 }
 
 export interface UpdateProductData {
@@ -37,6 +43,12 @@ export interface UpdateProductData {
   categoryId?: string;
   featured?: string | null;
   isActive?: boolean;
+  stock?: number;
+  unitType?: string;
+  addedDate?: string;
+  discountPrice?: number | null;
+  discountPercentage?: number | null;
+  imageFile?: File;
 }
 
 export interface ActiveFilters {

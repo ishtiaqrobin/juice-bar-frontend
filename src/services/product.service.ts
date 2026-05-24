@@ -243,11 +243,57 @@ class ProductService {
     }
   }
 
-  async createProduct(data: CreateProductData): Promise<ApiResponse<Product>> {
+  async createProduct(
+    data: CreateProductData & { imageFile?: File },
+  ): Promise<ApiResponse<Product>> {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
 
+      // If there's an image file, use FormData for multipart upload (Cloudinary)
+      if (data.imageFile) {
+        const formData = new FormData();
+        formData.append("image", data.imageFile);
+        formData.append("name", data.name);
+        formData.append("description", data.description || "");
+        formData.append("price", String(data.price || 0));
+        formData.append("categoryId", data.categoryId || "");
+        formData.append("stock", String(data.stock ?? 0));
+        formData.append("unitType", data.unitType || "piece");
+        formData.append("featured", data.featured || "");
+        formData.append(
+          "addedDate",
+          data.addedDate || new Date().toISOString().split("T")[0],
+        );
+        formData.append("discountPrice", String(data.discountPrice ?? ""));
+        formData.append(
+          "discountPercentage",
+          String(data.discountPercentage ?? ""),
+        );
+        formData.append("isActive", String(data.isActive ?? true));
+
+        const response = await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Cookie: cookieStore.toString(),
+          },
+        });
+
+        const jsonData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(jsonData.message || "Request failed");
+        }
+
+        return {
+          ...jsonData,
+          message: "Product created successfully",
+        };
+      }
+
+      // Otherwise, send JSON (for image URL passed from client)
       const response = await this.fetchWithAuth(API_ENDPOINTS.PRODUCTS.BASE, {
         method: "POST",
         headers: {
@@ -269,12 +315,63 @@ class ProductService {
 
   async updateProduct(
     id: string,
-    data: UpdateProductData,
+    data: UpdateProductData & { imageFile?: File },
   ): Promise<ApiResponse<Product>> {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
 
+      // If there's an image file, use FormData for multipart upload (Cloudinary)
+      if (data.imageFile) {
+        const formData = new FormData();
+        formData.append("image", data.imageFile);
+        if (data.name !== undefined) formData.append("name", data.name);
+        if (data.description !== undefined)
+          formData.append("description", data.description);
+        if (data.price !== undefined)
+          formData.append("price", String(data.price));
+        if (data.categoryId !== undefined)
+          formData.append("categoryId", data.categoryId);
+        if (data.stock !== undefined)
+          formData.append("stock", String(data.stock));
+        if (data.unitType !== undefined)
+          formData.append("unitType", data.unitType);
+        if (data.featured !== undefined)
+          formData.append("featured", data.featured || "");
+        if (data.addedDate !== undefined)
+          formData.append("addedDate", data.addedDate);
+        if (data.discountPrice !== undefined)
+          formData.append("discountPrice", String(data.discountPrice ?? ""));
+        if (data.discountPercentage !== undefined)
+          formData.append(
+            "discountPercentage",
+            String(data.discountPercentage ?? ""),
+          );
+        if (data.isActive !== undefined)
+          formData.append("isActive", String(data.isActive));
+
+        const response = await fetch(API_ENDPOINTS.PRODUCTS.BY_ID(id), {
+          method: "PUT",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Cookie: cookieStore.toString(),
+          },
+        });
+
+        const jsonData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(jsonData.message || "Request failed");
+        }
+
+        return {
+          ...jsonData,
+          message: "Product updated successfully",
+        };
+      }
+
+      // Otherwise, send JSON (for image URL passed from client)
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.PRODUCTS.BY_ID(id),
         {

@@ -29,8 +29,17 @@ import {
 import CategoryDialog from "@/components/modules/admin/category/CategoryDialog";
 import FeaturedDialog from "@/components/modules/admin/featured/FeaturedDialog";
 import { saveProductAction } from "@/actions/product.action";
-import { uploadImage, UPLOAD_CONSTRAINTS } from "@/lib/upload-image";
 import { Category, FeaturedOption, Product, ProductPayload } from "@/types";
+
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+] as const;
+const ACCEPT_TYPES = "image/jpeg,image/jpg,image/png,image/webp";
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -49,11 +58,14 @@ export default function ProductFormClient({
 }: ProductFormClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [uploadPending, startUpload] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [selectKey, setSelectKey] = useState(0);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddFeatured, setShowAddFeatured] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(
+    product?.image ?? "",
+  );
 
   // ── react-hook-form ───────────────────────────────────────────────────────
   const {
@@ -84,7 +96,6 @@ export default function ProductFormClient({
   // Watch fields needed for reactive UI
   const price = watch("price");
   const discountPercentage = watch("discountPercentage");
-  const imageUrl = watch("image");
   const unitType = watch("unitType");
 
   // ── Discount calculation ──────────────────────────────────────────────────
@@ -113,13 +124,30 @@ export default function ProductFormClient({
   // ── Image upload ──────────────────────────────────────────────────────────
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    startUpload(() =>
-      uploadImage(file, {
-        endpoint: "product",
-        onSuccess: (url) => setValue("image", url, { shouldValidate: true }),
-        inputRef: e.target,
-      }),
-    );
+    if (!file) return;
+
+    // Validate file type
+    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      const readable = ALLOWED_TYPES.map((t) =>
+        t.replace("image/", "").toUpperCase(),
+      ).join(", ");
+      toast.error(`Only ${readable} images are allowed`);
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_SIZE_BYTES) {
+      const currentMB = (file.size / 1024 / 1024).toFixed(1);
+      toast.error(
+        `Image must be smaller than ${MAX_SIZE_MB} MB (current: ${currentMB})`,
+      );
+      return;
+    }
+
+    // Create preview
+    const previewUrl = URL.createObjectURL(file);
+    setImageFile(file);
+    setImagePreview(previewUrl);
   };
 
   // ── Form submit ───────────────────────────────────────────────────────────
@@ -127,11 +155,11 @@ export default function ProductFormClient({
     setServerError(null);
 
     // Build the typed payload from validated form values
-    const payload: ProductPayload = {
+    const payload: ProductPayload & { imageFile?: File } = {
       name: values.name.trim(),
       description: values.description.trim(),
       price: parseFloat(values.price),
-      image: values.image,
+      image: imagePreview,
       categoryId: values.categoryId,
       stock: parseFloat(values.stock) || 0,
       unitType: values.unitType,
@@ -144,6 +172,7 @@ export default function ProductFormClient({
         ? parseFloat(values.discountPercentage)
         : null,
       isActive: values.isActive,
+      ...(imageFile && { imageFile }),
     };
 
     startTransition(async () => {
@@ -167,7 +196,7 @@ export default function ProductFormClient({
     setSelectKey((k) => k + 1);
   };
 
-  const isSubmitting = isPending || uploadPending;
+  const isSubmitting = isPending;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -397,23 +426,23 @@ export default function ProductFormClient({
                 <Input
                   id="imageFile"
                   type="file"
-                  accept={UPLOAD_CONSTRAINTS.ACCEPT}
+                  accept={ACCEPT_TYPES}
                   onChange={handleImageChange}
-                  disabled={uploadPending}
+                  disabled={isSubmitting}
                 />
-                {uploadPending && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded">
-                    <Loader2 className="animate-spin text-gray-500" size={20} />
-                  </div>
+                {!imagePreview && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Max size: {MAX_SIZE_MB} MB. Formats: JPEG, PNG, WebP
+                  </p>
                 )}
               </div>
               {errors.image && (
                 <p className="text-xs text-red-500">{errors.image.message}</p>
               )}
-              {imageUrl && (
+              {imagePreview && (
                 <div className="mt-2">
                   <Image
-                    src={imageUrl}
+                    src={imagePreview}
                     alt="Product preview"
                     width={128}
                     height={128}

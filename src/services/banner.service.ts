@@ -110,11 +110,44 @@ class BannerService {
     }
   }
 
-  async createBanner(data: CreateBannerData): Promise<ApiResponse<Banner>> {
+  async createBanner(
+    data: CreateBannerData & { imageFile?: File },
+  ): Promise<ApiResponse<Banner>> {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
 
+      // If there's an image file, use FormData for multipart upload (Cloudinary)
+      if (data.imageFile) {
+        const formData = new FormData();
+        formData.append("image", data.imageFile);
+        formData.append("text", data.text || "");
+        formData.append("description", data.description || "");
+        formData.append("isActive", String(data.isActive ?? true));
+        formData.append("order", String(data.order ?? 0));
+
+        const response = await fetch(API_ENDPOINTS.BANNERS.BASE, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Cookie: cookieStore.toString(),
+          },
+        });
+
+        const jsonData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(jsonData.message || "Request failed");
+        }
+
+        return {
+          ...jsonData,
+          message: "Banner created successfully",
+        };
+      }
+
+      // Otherwise, send JSON (for image URL passed from client)
       const response = await this.fetchWithAuth(API_ENDPOINTS.BANNERS.BASE, {
         method: "POST",
         body: JSON.stringify(data),
@@ -135,12 +168,46 @@ class BannerService {
 
   async updateBanner(
     id: string,
-    data: UpdateBannerData,
+    data: UpdateBannerData & { imageFile?: File },
   ): Promise<ApiResponse<Banner>> {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
 
+      // If there's an image file, use FormData for multipart upload (Cloudinary)
+      if (data.imageFile) {
+        const formData = new FormData();
+        formData.append("image", data.imageFile);
+        if (data.text !== undefined) formData.append("text", data.text);
+        if (data.description !== undefined)
+          formData.append("description", data.description || "");
+        if (data.isActive !== undefined)
+          formData.append("isActive", String(data.isActive));
+        if (data.order !== undefined)
+          formData.append("order", String(data.order));
+
+        const response = await fetch(API_ENDPOINTS.BANNERS.BY_ID(id), {
+          method: "PUT",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Cookie: cookieStore.toString(),
+          },
+        });
+
+        const jsonData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(jsonData.message || "Request failed");
+        }
+
+        return {
+          ...jsonData,
+          message: "Banner updated successfully",
+        };
+      }
+
+      // Otherwise, send JSON (for image URL passed from client)
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.BANNERS.BY_ID(id),
         {

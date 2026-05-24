@@ -8,7 +8,9 @@ export const getBanners = async () => {
   return await bannerService.getBanners();
 };
 
-export const createBanner = async (bannerData: CreateBannerData) => {
+export const createBanner = async (
+  bannerData: CreateBannerData & { imageFile?: File },
+) => {
   try {
     const res = await bannerService.createBanner(bannerData);
     revalidateTag("banners", "max");
@@ -28,7 +30,7 @@ export const createBanner = async (bannerData: CreateBannerData) => {
 
 export const updateBanner = async (
   id: string,
-  bannerData: UpdateBannerData,
+  bannerData: UpdateBannerData & { imageFile?: File },
 ) => {
   try {
     const res = await bannerService.updateBanner(id, bannerData);

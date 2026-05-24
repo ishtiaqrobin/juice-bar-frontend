@@ -9,7 +9,7 @@ export const productSchema = z.object({
     .refine((v) => parseFloat(v) > 0, {
       message: "Price must be greater than 0",
     }),
-  image: z.string().min(1, "Product image is required"),
+  image: z.string().optional(),
   categoryId: z
     .string()
     .min(1, "Category is required")
@@ -26,6 +26,7 @@ export const productSchema = z.object({
   discountPercentage: z.string().default(""),
   discountPrice: z.string().default(""),
   isActive: z.boolean().default(true),
+  imageFile: z.instanceof(File, { message: "Image must be a file" }).optional(),
 });
 
 export type ProductFormInput = z.input<typeof productSchema>;
