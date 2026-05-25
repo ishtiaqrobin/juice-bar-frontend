@@ -25,8 +25,8 @@ export function GoogleAuthButton({
     try {
       await authClient.signIn.social({
         provider: "google",
-        // callbackURL: process.env.FRONTEND_URL,
-        callbackURL: "http://localhost:3000/",
+        callbackURL: process.env.FRONTEND_URL,
+        // callbackURL: "http://localhost:3000/",
       });
     } catch (error) {
       console.error("Google auth error:", error);
