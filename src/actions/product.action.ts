@@ -99,7 +99,7 @@ export const deleteProduct = async (id: string) => {
 
 export async function saveProductAction(
   productId: string | null,
-  payload: ProductPayload,
+  payload: ProductPayload & { imageFile?: File },
 ): Promise<SaveProductResult> {
   try {
     if (productId) {

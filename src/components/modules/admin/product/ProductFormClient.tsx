@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 
 import { formatPrice } from "@/lib/utils";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { IMAGE_UPLOAD_CONFIG } from "@/constants/imageUpload";
 import {
   productSchema,
   type ProductFormInput,
@@ -30,16 +31,6 @@ import CategoryDialog from "@/components/modules/admin/category/CategoryDialog";
 import FeaturedDialog from "@/components/modules/admin/featured/FeaturedDialog";
 import { saveProductAction } from "@/actions/product.action";
 import { Category, FeaturedOption, Product, ProductPayload } from "@/types";
-
-const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-] as const;
-const ACCEPT_TYPES = "image/jpeg,image/jpg,image/png,image/webp";
-const MAX_SIZE_MB = 5;
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -62,10 +53,16 @@ export default function ProductFormClient({
   const [selectKey, setSelectKey] = useState(0);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddFeatured, setShowAddFeatured] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>(
-    product?.image ?? "",
-  );
+
+  // Use the reusable hook for image upload with compression
+  const {
+    file: imageFile,
+    preview: imagePreview,
+    isCompressing,
+    handleFileChange,
+  } = useImageUpload({
+    showSuccessToast: false, // We'll handle in form submit
+  });
 
   // ── react-hook-form ───────────────────────────────────────────────────────
   const {
@@ -121,67 +118,49 @@ export default function ProductFormClient({
     }
   };
 
-  // ── Image upload ──────────────────────────────────────────────────────────
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
-      const readable = ALLOWED_TYPES.map((t) =>
-        t.replace("image/", "").toUpperCase(),
-      ).join(", ");
-      toast.error(`Only ${readable} images are allowed`);
-      return;
-    }
-
-    // Validate file size
-    if (file.size > MAX_SIZE_BYTES) {
-      const currentMB = (file.size / 1024 / 1024).toFixed(1);
-      toast.error(
-        `Image must be smaller than ${MAX_SIZE_MB} MB (current: ${currentMB})`,
-      );
-      return;
-    }
-
-    // Create preview
-    const previewUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setImagePreview(previewUrl);
-  };
-
   // ── Form submit ───────────────────────────────────────────────────────────
   const onSubmit: (values: ProductFormValues) => void = (values) => {
     setServerError(null);
 
-    // Build the typed payload from validated form values
-    const payload: ProductPayload & { imageFile?: File } = {
-      name: values.name.trim(),
-      description: values.description.trim(),
-      price: parseFloat(values.price),
-      image: imagePreview,
-      categoryId: values.categoryId,
-      stock: parseFloat(values.stock) || 0,
-      unitType: values.unitType,
-      featured: values.featured === "none" ? null : values.featured || null,
-      addedDate: values.addedDate,
-      discountPrice: values.discountPrice.trim()
-        ? parseFloat(values.discountPrice)
-        : null,
-      discountPercentage: values.discountPercentage.trim()
-        ? parseFloat(values.discountPercentage)
-        : null,
-      isActive: values.isActive,
-      ...(imageFile && { imageFile }),
-    };
-
     startTransition(async () => {
-      const result = await saveProductAction(product?.id ?? null, payload);
-      if (result?.error) {
-        setServerError(result.error);
-        toast.error(result.error);
+      try {
+        // Show preview: either new compressed file or existing image
+        const displayPreview = imagePreview || product?.image || "";
+
+        // Build payload with all form data and optional imageFile
+        // Service layer (via Server Action) handles FormData + API call
+        const payload: ProductPayload & { imageFile?: File } = {
+          name: values.name.trim(),
+          description: values.description.trim(),
+          price: parseFloat(values.price),
+          image: displayPreview,
+          categoryId: values.categoryId,
+          stock: parseFloat(values.stock) || 0,
+          unitType: values.unitType,
+          featured: values.featured === "none" ? null : values.featured || null,
+          addedDate: values.addedDate,
+          discountPrice: values.discountPrice.trim()
+            ? parseFloat(values.discountPrice)
+            : null,
+          discountPercentage: values.discountPercentage.trim()
+            ? parseFloat(values.discountPercentage)
+            : null,
+          isActive: values.isActive,
+          ...(imageFile && { imageFile }),
+        };
+
+        const result = await saveProductAction(product?.id ?? null, payload);
+        if (result?.error) {
+          setServerError(result.error);
+          toast.error(result.error);
+        }
+        // On success, redirect() is called server-side
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Operation failed";
+        setServerError(message);
+        toast.error(message);
       }
-      // On success, redirect() is called server-side — no client navigation needed
     });
   };
 
@@ -426,24 +405,26 @@ export default function ProductFormClient({
                 <Input
                   id="imageFile"
                   type="file"
-                  accept={ACCEPT_TYPES}
-                  onChange={handleImageChange}
-                  disabled={isSubmitting}
+                  accept={IMAGE_UPLOAD_CONFIG.ACCEPT_TYPES}
+                  onChange={handleFileChange}
+                  disabled={isSubmitting || isCompressing}
                 />
-                {!imagePreview && (
+                {!(imagePreview || product?.image) && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Max size: {MAX_SIZE_MB} MB. Formats: JPEG, PNG, WebP
+                    Max size: {IMAGE_UPLOAD_CONFIG.MAX_SIZE_MB} MB.
+                    Auto-compressed!
                   </p>
                 )}
               </div>
               {errors.image && (
                 <p className="text-xs text-red-500">{errors.image.message}</p>
               )}
-              {imagePreview && (
+              {(imagePreview || product?.image) && (
                 <div className="mt-2">
                   <Image
-                    src={imagePreview}
-                    alt="Product preview"
+                    key={product?.id || "new"} // ID-based key for proper rendering
+                    src={imagePreview || product?.image || ""}
+                    alt={`Product preview - ${product?.id || "new"}`}
                     width={128}
                     height={128}
                     className="w-32 h-32 object-cover rounded"
@@ -459,6 +440,7 @@ export default function ProductFormClient({
                 id="addedDate"
                 type="date"
                 className="text-sm"
+                disabled={isSubmitting || isCompressing}
                 {...register("addedDate")}
               />
             </div>
@@ -481,9 +463,9 @@ export default function ProductFormClient({
           </div> */}
 
           {/* ── Server error ──────────────────────────────────────── */}
-          {serverError && (
+          {/* {serverError && (
             <p className="text-sm text-red-600 font-medium">{serverError}</p>
-          )}
+          )} */}
 
           {/* ── Actions ───────────────────────────────────────────── */}
           <div className="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-2">
@@ -492,19 +474,24 @@ export default function ProductFormClient({
               variant="outline"
               className="hover:cursor-pointer"
               onClick={() => router.back()}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isCompressing}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="hover:cursor-pointer"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isCompressing}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin mr-2" size={16} />
                   {product ? "Updating..." : "Adding..."}
+                </>
+              ) : isCompressing ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" size={16} />
+                  Compressing...
                 </>
               ) : (
                 <>{product ? "Update Product" : "Add Product"}</>

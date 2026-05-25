@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,17 +8,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { IMAGE_UPLOAD_CONFIG } from "@/constants/imageUpload";
 import { userService } from "@/services";
-
-const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-] as const;
-const ACCEPT_TYPES = "image/jpeg,image/jpg,image/png,image/webp";
-const MAX_SIZE_MB = 5;
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 interface FormData {
   name: string;
@@ -30,12 +22,21 @@ export default function UserProfileComponent() {
   const { user, isLoading: loading, updateUser } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
+  });
+
+  // Use the reusable hook for image upload with compression
+  const {
+    file: imageFile,
+    preview: imagePreview,
+    isCompressing,
+    handleFileChange,
+    reset: resetImage,
+  } = useImageUpload({
+    showSuccessToast: true,
   });
 
   // Update form data when user changes
@@ -48,9 +49,6 @@ export default function UserProfileComponent() {
           ? user.phone.slice(3)
           : user.phone || "",
       });
-      if (user.image) {
-        setProfileImage(user.image);
-      }
     }
   }, [user]);
 
@@ -96,7 +94,7 @@ export default function UserProfileComponent() {
     );
   }
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     // For phone number, only allow digits
     if (name === "phone") {
@@ -113,34 +111,6 @@ export default function UserProfileComponent() {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!(ALLOWED_TYPES as readonly string[]).includes(file.type)) {
-      const readable = ALLOWED_TYPES.map((t) =>
-        t.replace("image/", "").toUpperCase(),
-      ).join(", ");
-      toast.error(`Only ${readable} images are allowed`);
-      return;
-    }
-
-    // Validate file size
-    if (file.size > MAX_SIZE_BYTES) {
-      const currentMB = (file.size / 1024 / 1024).toFixed(1);
-      toast.error(
-        `Image must be smaller than ${MAX_SIZE_MB} MB (current: ${currentMB})`,
-      );
-      return;
-    }
-
-    // Create preview
-    const previewUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setProfileImage(previewUrl);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -161,6 +131,7 @@ export default function UserProfileComponent() {
       await updateUser(response.data);
 
       toast.success("Profile updated successfully!");
+      resetImage();
     } catch {
       toast.error("Failed to update profile. Please try again.");
     } finally {
@@ -176,10 +147,11 @@ export default function UserProfileComponent() {
           {/* Profile Image */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-              {profileImage || user?.image ? (
+              {imagePreview || user?.image ? (
                 <Image
-                  src={profileImage || user?.image || ""}
-                  alt="Profile"
+                  key={user?.id || "default"} // ID-based key for proper rendering
+                  src={imagePreview || user?.image || ""}
+                  alt={`Profile - ${user?.id || "user"}`}
                   fill
                   className="object-cover"
                 />
@@ -193,14 +165,14 @@ export default function UserProfileComponent() {
             </div>
             <Input
               type="file"
-              accept={ACCEPT_TYPES}
-              onChange={handleImageChange}
-              disabled={isLoading}
+              accept={IMAGE_UPLOAD_CONFIG.ACCEPT_TYPES}
+              onChange={handleFileChange}
+              disabled={isLoading || isCompressing}
               className="max-w-[195px]"
             />
-            {!profileImage && (
+            {!imagePreview && (
               <p className="text-xs text-gray-500">
-                Max size: {MAX_SIZE_MB} MB. Formats: JPEG, PNG, WebP
+                Max size: {IMAGE_UPLOAD_CONFIG.MAX_SIZE_MB} MB. Auto-compressed!
               </p>
             )}
           </div>
@@ -272,9 +244,13 @@ export default function UserProfileComponent() {
         <Button
           type="submit"
           className="w-full h-10 bg-primary text-white hover:cursor-pointer"
-          disabled={isLoading}
+          disabled={isLoading || isCompressing}
         >
-          {isLoading ? "Updating..." : "Update Profile"}
+          {isLoading
+            ? "Updating..."
+            : isCompressing
+              ? "Compressing..."
+              : "Update Profile"}
         </Button>
       </form>
     </div>
