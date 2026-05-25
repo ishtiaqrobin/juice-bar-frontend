@@ -66,6 +66,8 @@ async function fetchSession(cookieHeader: string) {
 
     const session = await res.json();
 
+    console.log("Session fetch data :", session);
+
     if (session === null) {
       return {
         data: null,
