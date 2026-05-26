@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sessionService } from "./services/session.service";
 import { Roles } from "./constants/roles";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   let isAuthenticated = false;
@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
     const { data } = await sessionService.getSession();
     // const { data } = await sessionService.getSessionFromRequest(request);
 
-    console.log("session data", data);
+    // console.log("session data", data);
 
     if (data?.user) {
       isAuthenticated = true;
