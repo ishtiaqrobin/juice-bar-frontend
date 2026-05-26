@@ -1,9 +1,8 @@
 import { env } from "@/env";
-// import { API_ENDPOINTS } from "@/lib/api-endpoints";
-import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
-// const AUTH_URL = env.NEXT_PUBLIC_AUTH_URL;
+// ✅ Server-only variable
+const SESSION_URL = `${env.AUTH_URL}/get-session`;
 
 async function fetchSession(cookieHeader: string, sessionToken?: string) {
   try {
@@ -19,10 +18,8 @@ async function fetchSession(cookieHeader: string, sessionToken?: string) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
     }
 
-    // const res = await fetch(API_ENDPOINTS.AUTH.SESSION, {
-    const res = await fetch(`${env.AUTH_URL}/get-session`, {
+    const res = await fetch(SESSION_URL, {
       headers,
-      // credentials: "include",
       cache: "no-store",
     });
 
@@ -31,37 +28,21 @@ async function fetchSession(cookieHeader: string, sessionToken?: string) {
 
     const session = await res.json();
 
-    // console.log("Session fetch data :", session);
-
     if (session === null) {
-      return {
-        data: null,
-        error: {
-          message: "No active session",
-        },
-      };
+      return { data: null, error: { message: "No active session" } };
     }
 
-    return {
-      data: session,
-      error: null,
-    };
+    return { data: session, error: null };
   } catch (err) {
     console.error("Error fetching session:", err);
-    return {
-      data: null,
-      error: {
-        message: "Error fetching session",
-      },
-    };
+    return { data: null, error: { message: "Error fetching session" } };
   }
 }
 
 export const sessionService = {
   /**
    * Edge Middleware (proxy.ts) এর জন্য।
-   * next/headers cookies() Edge runtime এ কাজ করে না।
-   * Request এর raw cookie header সরাসরি forward করে।
+   * ✅ next/headers import নেই — Edge runtime safe
    */
   getSessionFromRequest: async function (request: NextRequest) {
     const cookieHeader = request.headers.get("cookie") ?? "";
@@ -72,9 +53,12 @@ export const sessionService = {
 
   /**
    * Server Components / Server Actions / Route Handlers এর জন্য।
-   * Node.js runtime এ next/headers cookies() কাজ করে।
+   * ✅ Dynamic import — Edge runtime এ এই function call হয় না
    */
   getSession: async function () {
+    // ✅ Top-level import নয় — dynamic import
+    // next/headers শুধু Node.js runtime এ call হবে
+    const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
     const sessionToken =

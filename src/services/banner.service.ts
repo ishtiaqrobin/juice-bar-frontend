@@ -130,6 +130,7 @@ class BannerService {
         const headers: Record<string, string> = {
           Cookie: cookieStore.toString(),
         };
+
         if (sessionToken) {
           headers["Authorization"] = `Bearer ${sessionToken}`;
         }
