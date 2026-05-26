@@ -14,6 +14,8 @@ export function useAuth() {
     refetch,
   } = authClient.useSession();
 
+  console.log("Session data in useAuth:", authClient.useSession());
+
   const login = async (data: {
     email: string;
     password: string;
@@ -66,12 +68,12 @@ export function useAuth() {
     try {
       await authClient.signOut();
       toast.success("Logged out successfully");
-      // router.refresh();
-      window.location.href = "/login";
+      router.refresh();
+      // window.location.href = "/login";
 
-      // setTimeout(() => {
-      //   window.location.href = "/login";
-      // }, 100);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Logout failed");
