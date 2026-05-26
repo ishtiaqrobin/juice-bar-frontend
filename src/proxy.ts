@@ -14,7 +14,8 @@ export async function proxy(request: NextRequest) {
   // Server-side session check — pass request so cookies are forwarded
 
   try {
-    const { data } = await sessionService.getSessionFromRequest(request);
+    const { data } = await sessionService.getSession();
+    // const { data } = await sessionService.getSessionFromRequest(request);
 
     console.log("session data", data);
 
@@ -41,25 +42,25 @@ export async function proxy(request: NextRequest) {
 
   //* User is authenticated and role = ADMIN
   //* User can not visit user dashboard
-//   if (isAdmin && pathname.startsWith("/dashboard")) {
-//     return NextResponse.redirect(new URL("/admin-dashboard", request.url));
-//   }
+  if (isAdmin && pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/admin-dashboard", request.url));
+  }
 
-//   //* User is authenticated and role = USER
-//   //* User can not visit admin dashboard
-//   if (!isAdmin && pathname.startsWith("/admin-dashboard")) {
-//     return NextResponse.redirect(new URL("/dashboard", request.url));
-//   }
+  //* User is authenticated and role = USER
+  //* User can not visit admin dashboard
+  if (!isAdmin && pathname.startsWith("/admin-dashboard")) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // "/dashboard",
-    // "/dashboard/:path*",
-    // "/admin-dashboard",
-    // "/admin-dashboard/:path*",
-    // "/login",
+    "/dashboard",
+    "/dashboard/:path*",
+    "/admin-dashboard",
+    "/admin-dashboard/:path*",
+    "/login",
   ],
 };

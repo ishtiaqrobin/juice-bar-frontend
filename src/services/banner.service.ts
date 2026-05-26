@@ -116,6 +116,7 @@ class BannerService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
       // If there's an image file, use FormData for multipart upload (Cloudinary)
       if (data.imageFile) {
@@ -126,13 +127,18 @@ class BannerService {
         formData.append("isActive", String(data.isActive ?? true));
         formData.append("order", String(data.order ?? 0));
 
+        const headers: Record<string, string> = {
+          Cookie: cookieStore.toString(),
+        };
+        if (sessionToken) {
+          headers["Authorization"] = `Bearer ${sessionToken}`;
+        }
+
         const response = await fetch(API_ENDPOINTS.BANNERS.BASE, {
           method: "POST",
           body: formData,
           credentials: "include",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         });
 
         const jsonData = await response.json();
@@ -148,12 +154,17 @@ class BannerService {
       }
 
       // Otherwise, send JSON (for image URL passed from client)
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
+
       const response = await this.fetchWithAuth(API_ENDPOINTS.BANNERS.BASE, {
         method: "POST",
         body: JSON.stringify(data),
-        headers: {
-          Cookie: cookieStore.toString(),
-        },
+        headers,
       });
       return {
         ...response,
@@ -173,6 +184,7 @@ class BannerService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
       // If there's an image file, use FormData for multipart upload (Cloudinary)
       if (data.imageFile) {
@@ -186,13 +198,18 @@ class BannerService {
         if (data.order !== undefined)
           formData.append("order", String(data.order));
 
+        const headers: Record<string, string> = {
+          Cookie: cookieStore.toString(),
+        };
+        if (sessionToken) {
+          headers["Authorization"] = `Bearer ${sessionToken}`;
+        }
+
         const response = await fetch(API_ENDPOINTS.BANNERS.BY_ID(id), {
           method: "PUT",
           body: formData,
           credentials: "include",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         });
 
         const jsonData = await response.json();
@@ -208,14 +225,19 @@ class BannerService {
       }
 
       // Otherwise, send JSON (for image URL passed from client)
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
+
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.BANNERS.BY_ID(id),
         {
           method: "PUT",
           body: JSON.stringify(data),
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {
@@ -233,14 +255,20 @@ class BannerService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.BANNERS.BY_ID(id),
         {
           method: "DELETE",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {

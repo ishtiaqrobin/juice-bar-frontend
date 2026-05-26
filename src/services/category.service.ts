@@ -118,13 +118,19 @@ class CategoryService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(API_ENDPOINTS.CATEGORIES.BASE, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookieStore.toString(),
-        },
+        headers,
         body: JSON.stringify(data),
       });
       return {
@@ -145,15 +151,21 @@ class CategoryService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.CATEGORIES.BY_ID(id),
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: cookieStore.toString(),
-          },
+          headers,
           body: JSON.stringify(data),
         },
       );
@@ -172,14 +184,20 @@ class CategoryService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.CATEGORIES.BY_ID(id),
         {
           method: "DELETE",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {

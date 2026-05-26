@@ -51,12 +51,22 @@ import { API_ENDPOINTS } from "@/lib/api-endpoints";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
-async function fetchSession(cookieHeader: string) {
+async function fetchSession(cookieHeader: string, sessionToken?: string) {
   try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (cookieHeader) {
+      headers["Cookie"] = cookieHeader;
+    }
+
+    if (sessionToken) {
+      headers["Authorization"] = `Bearer ${sessionToken}`;
+    }
+
     const res = await fetch(API_ENDPOINTS.AUTH.SESSION, {
-      headers: {
-        Cookie: cookieHeader,
-      },
+      headers,
       credentials: "include",
       cache: "no-store",
     });
@@ -95,12 +105,13 @@ async function fetchSession(cookieHeader: string) {
 export const sessionService = {
   /**
    * Get session from Edge Middleware (proxy.ts).
-   * Passes the incoming request's cookie header to the backend.
+   * Passes the incoming request's cookie header and session token to the backend.
    * next/headers cookies() does NOT work in Edge runtime.
    */
   getSessionFromRequest: async function (request: NextRequest) {
     const cookieHeader = request.headers.get("cookie") ?? "";
-    return fetchSession(cookieHeader);
+    const sessionToken = request.cookies.get("better-auth.session_token")?.value ?? "";
+    return fetchSession(cookieHeader, sessionToken);
   },
 
   /**
@@ -110,6 +121,7 @@ export const sessionService = {
   getSession: async function () {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
-    return fetchSession(cookieHeader);
+    const sessionToken = cookieStore.get("better-auth.session_token")?.value ?? "";
+    return fetchSession(cookieHeader, sessionToken);
   },
 };

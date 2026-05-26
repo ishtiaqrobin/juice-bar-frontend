@@ -9,4 +9,3 @@ export const authClient = createAuthClient({
   baseURL: env.NEXT_PUBLIC_AUTH_URL,
   plugins: [lastLoginMethodClient(), emailOTPClient()],
 });
-

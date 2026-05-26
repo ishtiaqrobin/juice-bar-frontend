@@ -249,6 +249,7 @@ class ProductService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
       // If there's an image file, use FormData for multipart upload (Cloudinary)
       if (data.imageFile) {
@@ -272,13 +273,18 @@ class ProductService {
         );
         formData.append("isActive", String(data.isActive ?? true));
 
+        const headers: Record<string, string> = {
+          Cookie: cookieStore.toString(),
+        };
+        if (sessionToken) {
+          headers["Authorization"] = `Bearer ${sessionToken}`;
+        }
+
         const response = await fetch(API_ENDPOINTS.PRODUCTS.BASE, {
           method: "POST",
           body: formData,
           credentials: "include",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         });
 
         const jsonData = await response.json();
@@ -294,12 +300,17 @@ class ProductService {
       }
 
       // Otherwise, send JSON (for image URL passed from client)
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
+
       const response = await this.fetchWithAuth(API_ENDPOINTS.PRODUCTS.BASE, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookieStore.toString(),
-        },
+        headers,
         body: JSON.stringify(data),
       });
       return {
@@ -320,6 +331,7 @@ class ProductService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
       // If there's an image file, use FormData for multipart upload (Cloudinary)
       if (data.imageFile) {
@@ -350,13 +362,18 @@ class ProductService {
         if (data.isActive !== undefined)
           formData.append("isActive", String(data.isActive));
 
+        const headers: Record<string, string> = {
+          Cookie: cookieStore.toString(),
+        };
+        if (sessionToken) {
+          headers["Authorization"] = `Bearer ${sessionToken}`;
+        }
+
         const response = await fetch(API_ENDPOINTS.PRODUCTS.BY_ID(id), {
           method: "PUT",
           body: formData,
           credentials: "include",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         });
 
         const jsonData = await response.json();
@@ -372,14 +389,19 @@ class ProductService {
       }
 
       // Otherwise, send JSON (for image URL passed from client)
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
+
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.PRODUCTS.BY_ID(id),
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: cookieStore.toString(),
-          },
+          headers,
           body: JSON.stringify(data),
         },
       );
@@ -398,14 +420,20 @@ class ProductService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.PRODUCTS.BY_ID(id),
         {
           method: "DELETE",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {

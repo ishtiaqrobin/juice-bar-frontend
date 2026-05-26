@@ -37,6 +37,7 @@ class AdminService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
       // Build query string from params
       const queryParams = new URLSearchParams();
@@ -47,10 +48,15 @@ class AdminService {
 
       const url = `${API_ENDPOINTS.ADMIN.USERS}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
 
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
+
       const response = await this.fetchWithAuth(url, {
-        headers: {
-          Cookie: cookieStore.toString(),
-        },
+        headers,
       });
       return {
         ...response,
@@ -86,14 +92,20 @@ class AdminService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.ADMIN.UPDATE_USER(id),
         {
           method: "PUT",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
           body: JSON.stringify(data),
         },
       );
@@ -112,14 +124,20 @@ class AdminService {
     try {
       const { cookies } = await import("next/headers");
       const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+      const headers: Record<string, string> = {
+        Cookie: cookieStore.toString(),
+      };
+      if (sessionToken) {
+        headers["Authorization"] = `Bearer ${sessionToken}`;
+      }
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.ADMIN.DELETE_USER(id),
         {
           method: "DELETE",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {
