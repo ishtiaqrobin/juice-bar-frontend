@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sessionService } from "./services/session.service";
 import { Roles } from "./constants/roles";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   let isAuthenticated = false;
