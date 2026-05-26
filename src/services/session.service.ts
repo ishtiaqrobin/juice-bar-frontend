@@ -1,6 +1,9 @@
-import { API_ENDPOINTS } from "@/lib/api-endpoints";
+import { env } from "@/env";
+// import { API_ENDPOINTS } from "@/lib/api-endpoints";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
+
+// const AUTH_URL = env.NEXT_PUBLIC_AUTH_URL;
 
 async function fetchSession(cookieHeader: string, sessionToken?: string) {
   try {
@@ -8,23 +11,17 @@ async function fetchSession(cookieHeader: string, sessionToken?: string) {
       "Content-Type": "application/json",
     };
 
-    // if (cookieHeader) {
-    //   headers["Cookie"] = cookieHeader;
-    // }
+    if (cookieHeader) {
+      headers["Cookie"] = cookieHeader;
+    }
 
-    // if (sessionToken) {
-    //   headers["Authorization"] = `Bearer ${sessionToken}`;
-    // }
+    if (sessionToken) {
+      headers["Authorization"] = `Bearer ${sessionToken}`;
+    }
 
-    // console.log("Fetching session with cookie header:", cookieHeader);
-    // console.log("Fetching session with headers:", headers);
-    // console.log("Fetching session with session token:", sessionToken);
-
-    const res = await fetch(API_ENDPOINTS.AUTH.SESSION, {
-      // headers,
-      headers: {
-        Cookie: cookieHeader,
-      },
+    // const res = await fetch(API_ENDPOINTS.AUTH.SESSION, {
+    const res = await fetch(`${env.AUTH_URL}/get-session`, {
+      headers,
       // credentials: "include",
       cache: "no-store",
     });
@@ -62,9 +59,9 @@ async function fetchSession(cookieHeader: string, sessionToken?: string) {
 
 export const sessionService = {
   /**
-   * Get session from Edge Middleware (proxy.ts).
-   * Passes the incoming request's cookie header and session token to the backend.
-   * next/headers cookies() does NOT work in Edge runtime.
+   * Edge Middleware (proxy.ts) এর জন্য।
+   * next/headers cookies() Edge runtime এ কাজ করে না।
+   * Request এর raw cookie header সরাসরি forward করে।
    */
   getSessionFromRequest: async function (request: NextRequest) {
     const cookieHeader = request.headers.get("cookie") ?? "";
@@ -74,8 +71,8 @@ export const sessionService = {
   },
 
   /**
-   * Get session from Server Components / Server Actions / Route Handlers.
-   * Uses next/headers cookies() which is available in Node.js runtime.
+   * Server Components / Server Actions / Route Handlers এর জন্য।
+   * Node.js runtime এ next/headers cookies() কাজ করে।
    */
   getSession: async function () {
     const cookieStore = await cookies();

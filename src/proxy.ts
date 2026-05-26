@@ -8,16 +8,10 @@ export async function proxy(request: NextRequest) {
   let isAuthenticated = false;
   let isAdmin = false;
 
-  // const { data } = await sessionService.getSession();
-  // console.log("session data", data);
-
-  // Server-side session check — pass request so cookies are forwarded
-
   try {
-    const { data } = await sessionService.getSession();
-    // const { data } = await sessionService.getSessionFromRequest(request);
-
-    // console.log("session data", data);
+    // ✅ getSession() নয় — Edge runtime এ next/headers কাজ করে না
+    // ✅ getSessionFromRequest(request) — request থেকে cookie forward করে
+    const { data } = await sessionService.getSessionFromRequest(request);
 
     if (data?.user) {
       isAuthenticated = true;
