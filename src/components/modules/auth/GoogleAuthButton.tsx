@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import GoogleIcon from "@/assets/icon/google_icon.png";
+import { env } from "@/env";
 
 interface GoogleAuthButtonProps {
   mode?: "login" | "signup";
@@ -25,8 +26,10 @@ export function GoogleAuthButton({
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: process.env.FRONTEND_URL,
-        // callbackURL: "http://localhost:3000/",
+        // callbackURL must be on the FRONTEND origin so the session
+        // cookie (set via Next.js rewrite proxy) is accessible.
+        // Never hardcode localhost — use the env variable.
+        callbackURL: `${env.NEXT_PUBLIC_APP_URL}/user-dashboard`,
       });
     } catch (error) {
       console.error("Google auth error:", error);
