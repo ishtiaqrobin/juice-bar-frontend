@@ -19,7 +19,7 @@ export async function proxy(request: NextRequest) {
     }
   } catch (error) {
     console.error("Session fetch error in middleware:", error);
-}
+  }
 
   //* Redirect if authenticated user tries to access /login
   if (pathname === "/login") {

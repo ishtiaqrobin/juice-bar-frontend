@@ -6,12 +6,9 @@ import {
 } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-  // IMPORTANT: baseURL must be the FRONTEND's own origin.
-  // next.config.ts rewrites /api/auth/* → backend, making auth requests
-  // same-origin. This prevents browsers from blocking cross-site cookies.
-
-  // baseURL: env.NEXT_PUBLIC_APP_URL,
-  baseURL: env.NEXT_PUBLIC_AUTH_URL,
+  // ✅ Frontend এর নিজের origin — rewrite এর মাধ্যমে backend এ যাবে
+  // Cookie সেট হবে friendsjuicebar.com এ, middleware পড়তে পারবে
+  baseURL: env.NEXT_PUBLIC_APP_URL, // https://friendsjuicebar.com
   fetchOptions: {
     credentials: "include",
   },
