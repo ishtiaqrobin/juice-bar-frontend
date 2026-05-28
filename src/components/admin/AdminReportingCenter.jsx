@@ -174,7 +174,7 @@ const AdminReportingCenter = () => {
               ))}
             </div>
 
-            <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/5">
+            <div className="mt-8 p-6 rounded-2xl bg-linear-to-br from-primary/10 to-transparent border border-primary/5">
               <h4 className="font-bold flex items-center gap-2 mb-4">
                 <Filter className="h-4 w-4" />
                 Analysis Summary
