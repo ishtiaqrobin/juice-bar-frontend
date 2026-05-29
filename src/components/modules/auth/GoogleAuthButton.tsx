@@ -22,14 +22,14 @@ export function GoogleAuthButton({
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
-
+    
     try {
       await authClient.signIn.social({
         provider: "google",
         // callbackURL must be on the FRONTEND origin so the session
         // cookie (set via Next.js rewrite proxy) is accessible.
         // Never hardcode localhost — use the env variable.
-        callbackURL: `${env.NEXT_PUBLIC_APP_URL}/user-dashboard`,
+        callbackURL: `${env.NEXT_PUBLIC_APP_URL}/dashboard`,
       });
     } catch (error) {
       console.error("Google auth error:", error);

@@ -5,10 +5,13 @@ import MobileFooter from "@/components/layout/mobile/MobileFooter";
 import { BottomTabBar } from "@/components/layout/mobile/BottomTabBar";
 import HomeLayoutShell from "@/components/layout/HomeLayoutShell";
 
-export const metadata = {
-  title: "FreshFruit - Fruits & Juices",
-  description: "Fresh organic fruits and juices everyday!",
-};
+// Page-level metadata is set per-page (see page.tsx).
+// The root layout in src/app/layout.tsx carries the site-wide defaults.
+
+// export const metadata = {
+//   title: "FreshFruit - Fruits & Juices",
+//   description: "Fresh organic fruits and juices everyday!",
+// };
 
 export default function HomeLayout({
   children,

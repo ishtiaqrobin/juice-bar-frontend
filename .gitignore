@@ -47,3 +47,4 @@ standalone/
 .standalone/
 
 .zip
+.env*.local

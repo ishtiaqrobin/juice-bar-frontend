@@ -55,7 +55,7 @@ export default function CartContent() {
           </Link>
           <Link href="/menu">
             <Button className="rounded-full px-8 h-12 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
-              Explore Our Menu
+              Explore Menu
             </Button>
           </Link>
         </div>
