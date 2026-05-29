@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "Friends Juice Bar",
@@ -34,6 +35,7 @@ export default function RootLayout({
           //  richColors
           position="bottom-right"
         />
+        <SpeedInsights />
       </body>
     </html>
   );
