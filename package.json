@@ -32,6 +32,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@t3-oss/env-nextjs": "^0.13.10",
     "@tabler/icons-react": "^3.44.0",
+    "@vercel/analytics": "^2.0.1",
     "better-auth": "^1.4.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
