@@ -1,4 +1,6 @@
+import { Role } from "@/types/enums";
+
 export const Roles = {
-  admin: "ADMIN",
-  user: "USER",
+  admin: Role.ADMIN,
+  user: Role.USER,
 };

@@ -1,8 +1,10 @@
+import { Role } from "./enums";
+
 export interface UpdateUserData {
   name?: string;
   email?: string;
   phone?: string;
-  role?: "ADMIN" | "USER";
+  role?: Role;
   isActive?: boolean;
   isBanned?: boolean;
 }

@@ -1,4 +1,5 @@
 import { Category } from "./category.type";
+import { UnitType } from "./enums";
 
 export interface Product {
   id: string;
@@ -10,7 +11,7 @@ export interface Product {
   isActive?: boolean;
   featured?: string | null;
   stock?: number;
-  unitType?: string;
+  unitType?: UnitType;
   addedDate?: string;
   discountPrice?: number | null;
   discountPercentage?: number | null;
@@ -28,7 +29,7 @@ export interface CreateProductData {
   featured?: string | null;
   isActive?: boolean;
   stock?: number;
-  unitType?: string;
+  unitType?: UnitType;
   addedDate?: string;
   discountPrice?: number | null;
   discountPercentage?: number | null;
@@ -44,7 +45,7 @@ export interface UpdateProductData {
   featured?: string | null;
   isActive?: boolean;
   stock?: number;
-  unitType?: string;
+  unitType?: UnitType;
   addedDate?: string;
   discountPrice?: number | null;
   discountPercentage?: number | null;
@@ -78,7 +79,7 @@ export interface ProductPayload {
   image: string;
   categoryId: string;
   stock: number;
-  unitType: string;
+  unitType: UnitType;
   featured: string | null;
   addedDate: string;
   discountPrice: number | null;

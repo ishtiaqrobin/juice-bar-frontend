@@ -1,6 +1,8 @@
+import { Role } from "./enums";
+
 declare module "better-auth" {
   interface User {
-    role: "USER" | "ADMIN";
+    role: Role;
     phone?: string | null;
     isActive: boolean;
     isBanned: boolean;

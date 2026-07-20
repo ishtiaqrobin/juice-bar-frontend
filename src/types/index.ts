@@ -5,3 +5,4 @@ export type * from "./product.type";
 export type * from "./user.type";
 export type * from "./common.type";
 export type * from "./product-form.type";
+export * from "./enums";
