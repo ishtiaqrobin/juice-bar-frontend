@@ -33,6 +33,9 @@ class AdminService {
     limit?: number;
     role?: string;
     search?: string;
+    isActive?: boolean;
+    isBanned?: boolean;
+    emailVerified?: boolean;
   }): Promise<ApiResponse<User[]>> {
     try {
       const { cookies } = await import("next/headers");
@@ -45,6 +48,9 @@ class AdminService {
       if (params?.limit) queryParams.append("limit", params.limit.toString());
       if (params?.role) queryParams.append("role", params.role);
       if (params?.search) queryParams.append("search", params.search);
+      if (params?.isActive !== undefined) queryParams.append("isActive", String(params.isActive));
+      if (params?.isBanned !== undefined) queryParams.append("isBanned", String(params.isBanned));
+      if (params?.emailVerified !== undefined) queryParams.append("emailVerified", String(params.emailVerified));
 
       const url = `${API_ENDPOINTS.ADMIN.USERS}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
 

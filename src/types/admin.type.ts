@@ -2,7 +2,6 @@ import { Role } from "./enums";
 
 export interface UpdateUserData {
   name?: string;
-  email?: string;
   phone?: string;
   role?: Role;
   isActive?: boolean;

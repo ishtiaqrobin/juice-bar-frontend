@@ -114,19 +114,29 @@ class FeaturedService {
     }
   }
 
+  private async getCookieHeaders(): Promise<Record<string, string>> {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+    const headers: Record<string, string> = {
+      Cookie: cookieStore.toString(),
+    };
+    if (sessionToken) {
+      headers["Authorization"] = `Bearer ${sessionToken}`;
+    }
+    return headers;
+  }
+
   async createFeaturedOption(
     data: CreateFeaturedData,
   ): Promise<ApiResponse<FeaturedOption>> {
     try {
-      const { cookies } = await import("next/headers");
-      const cookieStore = await cookies();
+      const headers = await this.getCookieHeaders();
+      headers["Content-Type"] = "application/json";
 
       const response = await this.fetchWithAuth(API_ENDPOINTS.FEATURED.BASE, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookieStore.toString(),
-        },
+        headers,
         body: JSON.stringify(data),
       });
       return {
@@ -147,17 +157,14 @@ class FeaturedService {
     data: UpdateFeaturedData,
   ): Promise<ApiResponse<FeaturedOption>> {
     try {
-      const { cookies } = await import("next/headers");
-      const cookieStore = await cookies();
+      const headers = await this.getCookieHeaders();
+      headers["Content-Type"] = "application/json";
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.FEATURED.BY_ID(id),
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: cookieStore.toString(),
-          },
+          headers,
           body: JSON.stringify(data),
         },
       );
@@ -178,16 +185,13 @@ class FeaturedService {
     id: string,
   ): Promise<ApiResponse<{ message: string }>> {
     try {
-      const { cookies } = await import("next/headers");
-      const cookieStore = await cookies();
+      const headers = await this.getCookieHeaders();
 
       const response = await this.fetchWithAuth(
         API_ENDPOINTS.FEATURED.BY_ID(id),
         {
           method: "DELETE",
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
+          headers,
         },
       );
       return {

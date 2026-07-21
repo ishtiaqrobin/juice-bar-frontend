@@ -25,7 +25,7 @@ export interface CreateProductData {
   description: string;
   price: number;
   image?: string;
-  categoryId?: string;
+  categoryId: string;
   featured?: string | null;
   isActive?: boolean;
   stock?: number;

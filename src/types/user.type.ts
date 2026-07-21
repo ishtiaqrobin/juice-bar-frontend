@@ -10,6 +10,8 @@ export interface User {
   emailVerified?: boolean;
   isActive?: boolean;
   isBanned?: boolean;
+  lastLoginMethod?: string | null;
+  needPasswordChange?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -4,8 +4,16 @@ import { revalidateTag } from "next/cache";
 import { adminService } from "@/services";
 import { UpdateUserData } from "@/types/admin.type";
 
-export const getUsers = async () => {
-  return await adminService.getUsers();
+export const getUsers = async (params?: {
+  page?: number;
+  limit?: number;
+  role?: string;
+  search?: string;
+  isActive?: boolean;
+  isBanned?: boolean;
+  emailVerified?: boolean;
+}) => {
+  return await adminService.getUsers(params);
 };
 
 export const updateUser = async (id: string, userData: UpdateUserData) => {

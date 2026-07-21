@@ -260,7 +260,7 @@ class ProductService {
         formData.append("price", String(data.price || 0));
         formData.append("categoryId", data.categoryId || "");
         formData.append("stock", String(data.stock ?? 0));
-        formData.append("unitType", data.unitType || "piece");
+        formData.append("unitType", data.unitType || "PIECE");
         formData.append("featured", data.featured || "");
         formData.append(
           "addedDate",

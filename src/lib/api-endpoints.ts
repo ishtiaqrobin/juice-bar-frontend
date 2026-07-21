@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
     SIGN_IN: `${env.NEXT_PUBLIC_AUTH_URL}/sign-in/email`,
     SIGN_UP: `${env.NEXT_PUBLIC_AUTH_URL}/sign-up/email`,
     SIGN_OUT: `${env.NEXT_PUBLIC_AUTH_URL}/sign-out`,
+    FORGET_PASSWORD: `${API_BASE_URL}/auth/forget-password`,
   },
   EMAIL_OTP: {
     SEND_VERIFICATION: `${env.NEXT_PUBLIC_AUTH_URL}/email-otp/send-verification-otp`,
@@ -24,7 +25,6 @@ export const API_ENDPOINTS = {
     USER_BY_ID: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
     UPDATE_USER: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
     DELETE_USER: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
-    UPDATE_ROLE: (id: string) => `${API_BASE_URL}/admin/users/${id}/role`,
     DASHBOARD: {
       STATS: `${API_BASE_URL}/admin/dashboard/stats`,
       ANALYTICS: `${API_BASE_URL}/admin/dashboard/analytics`,

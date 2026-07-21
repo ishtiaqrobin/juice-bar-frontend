@@ -122,7 +122,7 @@ export default function BannerDialog({
           ...(imageFile
             ? { imageFile }
             : imagePreview
-              ? { imageUrl: imagePreview }
+              ? { image: imagePreview }
               : {}),
         };
         const res = await createBanner(payload);

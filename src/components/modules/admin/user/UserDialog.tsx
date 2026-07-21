@@ -22,7 +22,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { User } from "@/types";
+import { User, Role } from "@/types";
 import { updateUser } from "@/actions/admin.action";
 
 const userSchema = z.object({
@@ -112,7 +112,7 @@ export default function UserDialog({
 
             const res = await updateUser(user.id, {
                 name: values.name.trim(),
-                role: values.role,
+                role: values.role as Role,
                 ...(phoneToSend ? { phone: phoneToSend } : {}),
             });
 

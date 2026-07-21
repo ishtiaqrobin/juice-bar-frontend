@@ -102,12 +102,20 @@ const AdminDashboardStats = () => {
       iconColor: "text-purple-600",
       iconBg: "bg-purple-100",
     },
+    {
+      title: "Banners",
+      value: stats?.totalBanners || 0,
+      icon: ImageIcon,
+      description: "Active promotional banners",
+      iconColor: "text-pink-600",
+      iconBg: "bg-pink-100",
+    },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {loading
-        ? Array(4)
+        ? Array(5)
             .fill(0)
             .map((_, i) => (
               <Card key={i} className="border-primary/10">

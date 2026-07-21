@@ -1,15 +1,3 @@
-import { Product } from "./product.type";
-
-export interface Feature {
-  id: string;
-  name: string;
-  description?: string;
-  isActive: boolean;
-  products?: Product[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface FeaturedOption {
   id: string;
   name: string;

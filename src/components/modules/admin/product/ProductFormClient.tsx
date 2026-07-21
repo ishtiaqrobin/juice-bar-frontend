@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 import { formatPrice } from "@/lib/utils";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -31,6 +32,7 @@ import CategoryDialog from "@/components/modules/admin/category/CategoryDialog";
 import FeaturedDialog from "@/components/modules/admin/featured/FeaturedDialog";
 import { saveProductAction } from "@/actions/product.action";
 import { Category, FeaturedOption, Product, ProductPayload } from "@/types";
+import { UnitType } from "@/types/enums";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -81,8 +83,8 @@ export default function ProductFormClient({
       image: product?.image ?? "",
       categoryId: product?.categoryId ?? "",
       stock: product?.stock?.toString() ?? "",
-      unitType: product?.unitType ?? "piece",
-      featured: product?.featured ?? "none",
+      unitType: product?.unitType ?? UnitType.PIECE,
+      featured: product?.featured ?? "",
       addedDate: product?.addedDate ?? new Date().toISOString().split("T")[0],
       discountPercentage: product?.discountPercentage?.toString() ?? "",
       discountPrice: product?.discountPrice?.toString() ?? "",
@@ -136,7 +138,7 @@ export default function ProductFormClient({
           image: displayPreview,
           categoryId: values.categoryId,
           stock: parseFloat(values.stock) || 0,
-          unitType: values.unitType,
+          unitType: values.unitType as UnitType,
           featured: values.featured === "none" ? null : values.featured || null,
           addedDate: values.addedDate,
           discountPrice: values.discountPrice.trim()
@@ -205,14 +207,14 @@ export default function ProductFormClient({
           </div>
 
           {/* ── Description ───────────────────────────────────────── */}
-          {/* <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="description">Description</Label>
             <Input
               id="description"
               placeholder="Enter product description"
               {...register("description")}
             />
-          </div> */}
+          </div>
 
           {/* ── Price / Discount ──────────────────────────────────── */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -285,8 +287,11 @@ export default function ProductFormClient({
                       <SelectValue placeholder="Select unit type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="piece">Piece</SelectItem>
-                      <SelectItem value="kg">Kg</SelectItem>
+                      {Object.values(UnitType).map((unit) => (
+                        <SelectItem key={unit} value={unit}>
+                          {unit.charAt(0) + unit.slice(1).toLowerCase()}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -375,7 +380,7 @@ export default function ProductFormClient({
                 render={({ field }) => (
                   <Select
                     key={`featured-${selectKey}`}
-                    value={field.value}
+                    value={field.value ?? ""}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger className="bg-white w-full">
@@ -447,7 +452,7 @@ export default function ProductFormClient({
           </div>
 
           {/* ── Active Status ─────────────────────────────────────── */}
-          {/* <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4">
             <Label htmlFor="active">Active Status</Label>
             <Controller
               control={control}
@@ -460,12 +465,12 @@ export default function ProductFormClient({
                 />
               )}
             />
-          </div> */}
+          </div>
 
           {/* ── Server error ──────────────────────────────────────── */}
-          {/* {serverError && (
+          {serverError && (
             <p className="text-sm text-red-600 font-medium">{serverError}</p>
-          )} */}
+          )}
 
           {/* ── Actions ───────────────────────────────────────────── */}
           <div className="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-2">
