@@ -2,174 +2,210 @@ import Link from "next/link";
 import {
   Facebook,
   Instagram,
-  Twitter,
+  Music2,
+  ShieldCheck,
+  X,
   Youtube,
-  Mail,
-  Phone,
-  MapPin,
-  ArrowRight,
-  Leaf,
-  Clock,
-  Send
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
-export function Footer({ className = "" }) {
+type FooterProps = {
+  className?: string;
+};
+
+type FooterColumn = {
+  title: string;
+  links: string[];
+  verified?: boolean;
+};
+
+const footerColumns: FooterColumn[] = [
+  {
+    title: "Track My Order",
+    links: ["Services", "Gift Vouchers", "Catering", "Party", "e-Invoice"],
+  },
+  {
+    title: "About Us",
+    links: [
+      "Friends Juice Bar",
+      "Our Story",
+      "News",
+      "Scholarship",
+      "Social Responsibility",
+      "Add Hope Bangladesh",
+      "Join Us",
+    ],
+  },
+  {
+    title: "Our Food",
+    // verified: true,
+    links: [
+      "Halal Policy",
+      "Quality You Can Trust",
+      "Nutrition Facts",
+      "Allergen Information",
+      "Freshness Tips",
+    ],
+  },
+  {
+    title: "Help & Support",
+    links: [
+      "Share Your Feedback",
+      "Customer Care +880 1234-567890",
+      "Find a Friends Juice Bar",
+      "Scam Alert",
+      "FAQ",
+      "Terms & Conditions",
+    ],
+  },
+];
+
+const paymentMethods = [
+  <span key="mastercard" aria-label="Mastercard" className="relative h-5 w-8">
+    <span className="absolute left-0 top-0 h-5 w-5 rounded-full bg-[#eb001b]" />
+    <span className="absolute right-0 top-0 h-5 w-5 rounded-full bg-[#f79e1b] opacity-90" />
+  </span>,
+  <span
+    key="visa"
+    className="text-[15px] font-black italic tracking-tight text-[#1a1f71]"
+  >
+    VISA
+  </span>,
+  <span
+    key="boost"
+    className="text-[13px] font-bold tracking-tighter text-[#ef4335]"
+  >
+    Boost
+  </span>,
+  <span
+    key="grabpay"
+    className="text-[11px] font-bold tracking-tighter text-[#44a844]"
+  >
+    GrabPay
+  </span>,
+  <span
+    key="gopay"
+    className="rounded-sm bg-[#f0ca17] px-1 py-0.5 text-[8px] font-black leading-none text-[#343434]"
+  >
+    GO
+    <br />
+    PAY
+  </span>,
+  <span key="shopeepay" className="text-[11px] font-bold text-[#ef5b35]">
+    S<span className="text-[8px]">Pay</span>
+  </span>,
+  <span
+    key="touchngo"
+    className="rounded bg-[#1676b8] px-0.5 text-[8px] font-bold leading-4 text-white"
+  >
+    TnG
+  </span>,
+];
+
+const footerHref = (label: string) =>
+  `/${label
+    .toLowerCase()
+    .replaceAll("&", "and")
+    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}`;
+
+export function Footer({ className = "" }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={`bg-white text-stone-600 border-t border-primary/10 ${className}`}>
-      {/* Top Section - Newsletter */}
-      {/* <div className="bg-stone-50/50 border-b border-primary/5">
-        <div className="max-w-[1200px] mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-2 text-center md:text-left">
-            <h3 className="text-2xl font-black text-stone-900 tracking-tight flex items-center justify-center md:justify-start gap-2">
-              <span className="p-2 bg-primary/10 text-primary rounded-xl">
-                <Send className="h-5 w-5" />
-              </span>
-              Join the Juice Club
-            </h3>
-            <p className="text-stone-500 max-w-sm">
-              Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
-            </p>
-          </div>
-          <div className="flex w-full max-w-md gap-2">
-            <Input
-              placeholder="Enter your email"
-              className="bg-white border-stone-200 focus:border-primary rounded-full px-6 h-12 text-stone-900 shadow-sm"
-            />
-            <Button className="rounded-full px-8 h-12 font-bold bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
-              Subscribe Free
-            </Button>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Main Content Sections */}
-      <div className="max-w-[1200px] mx-auto px-6 py-16 grid gap-12 md:grid-cols-4">
-        {/* Brand Column */}
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-2xl font-extrabold text-stone-900 tracking-tighter flex items-center gap-2">
-              Friends <span className="text-primary">Juice Bar</span>
-            </h3>
-            <p className="text-sm leading-relaxed">
-              Fueling your lifestyle with premium, hand-crafted juices and nutritious snacks. Nature&apos;s best, served daily with love and freshness since 2024.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {[
-              { icon: Facebook, href: "#", bg: "bg-blue-50", text: "text-blue-600", hover: "hover:bg-blue-600" },
-              { icon: Instagram, href: "#", bg: "bg-pink-50", text: "text-pink-600", hover: "hover:bg-pink-600" },
-              { icon: Twitter, href: "#", bg: "bg-sky-50", text: "text-sky-600", hover: "hover:bg-sky-600" },
-              { icon: Youtube, href: "#", bg: "bg-red-50", text: "text-red-600", hover: "hover:bg-red-600" },
-            ].map((social, i) => (
-              <a
-                key={i}
-                href={social.href}
-                className={`p-2.5 rounded-2xl ${social.bg} ${social.text} border border-transparent transition-all duration-300 ${social.hover} hover:text-white group shadow-sm`}
-              >
-                <social.icon className="h-5 w-5 group-hover:scale-105 transition-transform" />
-              </a>
-            ))}
-          </div>
+    <footer className={`bg-white font-sans text-black ${className}`}>
+      <div className="mx-auto max-w-[1024px] px-10 pt-[104px]">
+        <div className="grid grid-cols-4 gap-x-16">
+          {footerColumns.map((column) => (
+            <section key={column.title}>
+              <h2 className="mb-4 flex items-center gap-3 text-base font-bold leading-5">
+                {column.title}
+                {column.verified && (
+                  <ShieldCheck
+                    aria-label="Verified halal"
+                    className="h-7 w-7 stroke-[1.4]"
+                  />
+                )}
+              </h2>
+              <ul className="space-y-[13px] text-base leading-6">
+                {column.links.map((link) => (
+                  <li key={link}>
+                    <Link
+                      href={footerHref(link)}
+                      className="transition-opacity hover:opacity-60"
+                    >
+                      {link}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
 
-        {/* Explore Links */}
-        <div>
-          <h4 className="text-base font-bold text-stone-900 mb-6 flex items-center gap-2 uppercase tracking-wider">
-            Explore
-          </h4>
-          <ul className="space-y-3.5 text-sm font-medium">
-            {[
-              { label: "Our Menu", href: "/menu" },
-              { label: "Hot Promotions", href: "/promotions" },
-              { label: "Loyalty Rewards", href: "/rewards" },
-              { label: "Juice Stories", href: "/stories" },
-              { label: "Sustainability", href: "/eco" },
-            ].map((link, i) => (
-              <li key={i}>
-                <Link href={link.href} className="hover:text-primary transition-colors flex items-center group">
-                  <span className="h-px w-0 bg-primary mr-0 group-hover:w-3 group-hover:mr-2 transition-all" />
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-[108px] flex justify-center gap-8">
+          <Link
+            href="#"
+            aria-label="TikTok"
+            className="transition-opacity hover:opacity-60"
+          >
+            <Music2 className="h-6 w-6" />
+          </Link>
+          <Link
+            href="#"
+            aria-label="Instagram"
+            className="transition-opacity hover:opacity-60"
+          >
+            <Instagram className="h-6 w-6 stroke-[2.4]" />
+          </Link>
+          <Link
+            href="#"
+            aria-label="Facebook"
+            className="transition-opacity hover:opacity-60"
+          >
+            <Facebook className="h-6 w-6" />
+          </Link>
+          <Link
+            href="#"
+            aria-label="X"
+            className="transition-opacity hover:opacity-60"
+          >
+            <X className="h-7 w-7 stroke-[1.8]" />
+          </Link>
+          <Link
+            href="#"
+            aria-label="YouTube"
+            className="transition-opacity hover:opacity-60"
+          >
+            <Youtube className="h-7 w-7" />
+          </Link>
         </div>
 
-        {/* Product Column */}
-        <div>
-          <h4 className="text-base font-bold text-stone-900 mb-6 flex items-center gap-2 uppercase tracking-wider">
-            Product
-          </h4>
-          <ul className="space-y-3.5 text-sm font-medium">
-            {[
-              { label: "About Friends", href: "/about" },
-              { label: "Join the Team", href: "/careers" },
-              { label: "Franchise Opportunity", href: "/franchise" },
-              { label: "Customer Support", href: "/contact" },
-              { label: "Privacy Policy", href: "/privacy" },
-            ].map((link, i) => (
-              <li key={i}>
-                <Link href={link.href} className="hover:text-primary transition-colors flex items-center group">
-                  <span className="h-px w-0 bg-primary mr-0 group-hover:w-3 group-hover:mr-2 transition-all" />
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Contact Info */}
-        <div>
-          <h4 className="text-base font-bold text-stone-900 mb-6 flex items-center gap-2 uppercase tracking-wider">
-            Get in Touch
-          </h4>
-          <div className="space-y-5">
-            <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 text-primary">
-                <MapPin className="h-4 w-4" />
-              </div>
-              <p className="text-sm leading-snug pt-1 font-medium text-stone-700">
-                123 Market Road, <br />
-                Gulshan 2, Dhaka 1212
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 text-primary">
-                <Phone className="h-4 w-4" />
-              </div>
-              <p className="text-sm font-medium text-stone-700">+880 1234-567890</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 text-primary">
-                <Clock className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-stone-900">Open Daily</p>
-                <p className="text-xs text-stone-500 font-medium">9:00 AM - 10:00 PM</p>
-              </div>
-            </div>
+        <div className="mt-10 flex items-center justify-center gap-5">
+          <span className="text-sm">Secure Payment</span>
+          <div
+            className="flex items-center gap-3"
+            aria-label="Accepted payment methods"
+          >
+            {paymentMethods}
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-stone-100 bg-white">
-        <div className="max-w-[1200px] mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-stone-500 font-semibold tracking-wide">
-            © {currentYear} Friends <span className="text-primary">Juice Bar</span>. All rights reserved.
-            <span className="hidden md:inline mx-2">•</span>
-            Made with <span className="text-primary">Freshness</span> in Dhaka.
-          </p>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-xs text-stone-500 font-bold uppercase tracking-widest">
-              <Leaf className="h-3.5 w-3.5 text-green-500" />
-              <span>100% Organic Products</span>
-            </div>
-          </div>
+        <div className="flex justify-center gap-5 py-7 text-sm leading-6">
+          <Link href="/terms-of-use" className="hover:underline">
+            Terms of Use
+          </Link>
+          <span aria-hidden="true">|</span>
+          <Link href="/privacy-policy" className="hover:underline">
+            Privacy Policy
+          </Link>
+          <span aria-hidden="true">|</span>
+          <Link href="/cookie-policy" className="hover:underline">
+            Use of Cookies
+          </Link>
+          <span aria-hidden="true">|</span>
+          <span>
+            © Copyright {currentYear} Friends Juice Bar. All rights reserved.
+          </span>
         </div>
       </div>
     </footer>
